@@ -118,3 +118,24 @@ export function keyDir(e: KeyboardEvent): SwipeDir | null {
     default: return null;
   }
 }
+
+/** Follows only the first finger down until it lifts, so stray fingers can't hijack a drag or end it early. */
+export function singlePointer(h: PointerHandlers): PointerHandlers {
+  let active: number | null = null;
+  return {
+    down(p) {
+      if (active !== null) return;
+      active = p.id;
+      h.down?.(p);
+    },
+    move(p) {
+      if (p.id === active) h.move?.(p);
+    },
+    up(p) {
+      if (p.id !== active) return;
+      active = null;
+      h.up?.(p);
+    },
+    hover: h.hover,
+  };
+}

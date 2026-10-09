@@ -3,7 +3,7 @@ import { createHud, showGameOver, showHint } from '../core/ui/overlay';
 import type { GameContext, GameInstance, GameMeta } from '../core/types';
 import { esc, ICONS, type Deps, type Nav } from './deps';
 import { fmtScore } from './format';
-import { openSettings } from './settings';
+import { openSettings, type SettingsSheet } from './settings';
 
 const MIN_PLAY_MS = 800;
 
@@ -28,11 +28,13 @@ export function renderPlayer(app: HTMLElement, meta: GameMeta, d: Deps, nav: Nav
   let disposed = false;
   let closeOverlay: (() => void) | null = null;
   let closeHint: (() => void) | null = null;
+  let sheet: SettingsSheet | null = null;
   const pausedBy = new Set<string>();
   let activeMs = 0;
   let since = performance.now();
 
   const setPaused = (why: string, on: boolean) => {
+    if (disposed) return;
     const was = pausedBy.size > 0;
     if (on) pausedBy.add(why);
     else pausedBy.delete(why);
@@ -59,7 +61,9 @@ export function renderPlayer(app: HTMLElement, meta: GameMeta, d: Deps, nav: Nav
     submitScore: (v) => d.stats.submit(meta.id, v, meta.scoring),
     best: () => d.stats.get(meta.id).best,
     gameOver({ score, text, retry }) {
+      // a run that ended just before the player left still counts, but its card must not appear elsewhere
       const r = d.stats.submit(meta.id, score, meta.scoring);
+      if (disposed) return;
       closeOverlay?.();
       const isNew = r.isNew && meta.scoring !== 'none';
       if (isNew) setTimeout(() => !disposed && d.sfx.play('win'), 250);
@@ -76,6 +80,7 @@ export function renderPlayer(app: HTMLElement, meta: GameMeta, d: Deps, nav: Nav
       });
     },
     hint(text) {
+      if (disposed) return;
       closeHint?.();
       closeHint = showHint(stage, text);
     },
@@ -118,12 +123,14 @@ export function renderPlayer(app: HTMLElement, meta: GameMeta, d: Deps, nav: Nav
 
   const onVisibility = () => setPaused('hidden', document.hidden);
   const onKey = (e: KeyboardEvent) => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.ctrlKey || e.metaKey || e.altKey || sheet) return;
     if (e.key === 'Escape') nav.home();
     else if (e.key === 'n' || e.key === 'N') nav.shuffle();
   };
   root.querySelector('.bar')!.addEventListener('click', (e) => {
     const act = (e.target as HTMLElement).closest<HTMLElement>('[data-act]')?.dataset.act;
+    // after a mouse click, hand the keyboard back to the game (Space flaps instead of re-pressing the button)
+    if ((e as MouseEvent).detail > 0) (document.activeElement as HTMLElement | null)?.blur();
     if (act === 'home') nav.home();
     else if (act === 'shuffle') {
       d.sfx.play('whoosh');
@@ -135,7 +142,11 @@ export function renderPlayer(app: HTMLElement, meta: GameMeta, d: Deps, nav: Nav
       d.haptics.tap();
     } else if (act === 'settings') {
       setPaused('settings', true);
-      void openSettings(d).then(() => setPaused('settings', false));
+      sheet = openSettings(d);
+      void sheet.closed.then(() => {
+        sheet = null;
+        setPaused('settings', false);
+      });
     }
   });
   document.addEventListener('visibilitychange', onVisibility);
@@ -145,8 +156,9 @@ export function renderPlayer(app: HTMLElement, meta: GameMeta, d: Deps, nav: Nav
   start();
 
   return () => {
-    disposed = true;
     if (!pausedBy.size) activeMs += performance.now() - since;
+    disposed = true;
+    sheet?.close();
     document.removeEventListener('visibilitychange', onVisibility);
     window.removeEventListener('keydown', onKey);
     closeOverlay?.();

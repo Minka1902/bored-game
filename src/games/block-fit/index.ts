@@ -1,4 +1,5 @@
 import { canvasGame } from '../../core/canvas-game';
+import { singlePointer } from '../../core/input';
 import { BG, PALETTE, shade } from '../../core/color';
 import { Particles } from '../../core/fx/particles';
 import { roundRect } from '../../core/math';
@@ -81,7 +82,7 @@ const game: GameFactory = (ctx) =>
     ctx.hint('Drag pieces onto the board');
 
     return {
-      pointer: {
+      pointer: singlePointer({
         down(p) {
           if (over) return;
           for (let i = 0; i < 3; i++) {
@@ -130,7 +131,7 @@ const game: GameFactory = (ctx) =>
           if (tray.every((x) => !x)) refill();
           checkOver();
         },
-      },
+      }),
       update(dt) {
         fx.update(dt);
         if (flash) {

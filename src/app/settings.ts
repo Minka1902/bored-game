@@ -1,8 +1,15 @@
 import { applySettings, loadSettings, type Deps, type Settings } from './deps';
 
-/** Bottom sheet with the sound and vibration switches. Returns a promise that settles when it closes. */
-export function openSettings(d: Deps): Promise<void> {
-  return new Promise((resolve) => {
+export interface SettingsSheet {
+  /** settles when the sheet closes, however it closes */
+  closed: Promise<void>;
+  close(): void;
+}
+
+/** Bottom sheet with the sound and vibration switches. */
+export function openSettings(d: Deps): SettingsSheet {
+  let close = () => {};
+  const closed = new Promise<void>((resolve) => {
     const s = loadSettings(d.store);
     const sheet = document.createElement('div');
     sheet.className = 'sheet-wrap';
@@ -14,7 +21,7 @@ export function openSettings(d: Deps): Promise<void> {
         <p class="sheet-note">Vibration works on Android. iPhones only buzz on older iOS versions.</p>
         <button class="btn btn-primary" data-act="close">Done</button>
       </div>`;
-    const close = () => {
+    close = () => {
       window.removeEventListener('keydown', onKey, true);
       sheet.remove();
       resolve();
@@ -40,4 +47,5 @@ export function openSettings(d: Deps): Promise<void> {
     document.body.appendChild(sheet);
     sheet.querySelector<HTMLButtonElement>('[data-act="close"]')!.focus();
   });
+  return { closed, close: () => close() };
 }

@@ -1,8 +1,9 @@
 import { canvasGame } from '../../core/canvas-game';
+import { singlePointer } from '../../core/input';
 import { BG, shade } from '../../core/color';
 import { Particles } from '../../core/fx/particles';
 import { clamp, roundRect, TAU } from '../../core/math';
-import { World, type Body } from '../../core/physics/circles';
+import { remapBodies, World, type Body } from '../../core/physics/circles';
 import type { GameFactory } from '../../core/types';
 import { DROPPABLE, mergeResult, TIERS } from './logic';
 
@@ -36,8 +37,10 @@ const game: GameFactory = (ctx) =>
     const radius = (tier: number) => TIERS[tier].r * box().k;
     const randTier = () => Math.floor(Math.pow(Math.random(), 1.6) * DROPPABLE);
 
+    let lastBox = box();
     const setup = () => {
       const b = box();
+      lastBox = b;
       world = new World();
       world.gravity = 1500 * b.k;
       world.restitution = 0.15;
@@ -106,7 +109,7 @@ const game: GameFactory = (ctx) =>
     ctx.hint('Drag to aim · let go to drop');
 
     return {
-      pointer: {
+      pointer: singlePointer({
         down(p) {
           aimX = p.x;
         },
@@ -120,7 +123,7 @@ const game: GameFactory = (ctx) =>
         hover(x) {
           aimX = x;
         },
-      },
+      }),
       key(e) {
         if (e.key === 'ArrowLeft') aimX -= 24;
         if (e.key === 'ArrowRight') aimX += 24;
@@ -130,7 +133,13 @@ const game: GameFactory = (ctx) =>
         }
       },
       resize() {
-        if (!world.bodies.length) reset();
+        // keep the pile: move and scale every ball into the re-centered box
+        if (!world.bodies.length) return reset();
+        const to = box();
+        remapBodies(world.bodies, lastBox, to);
+        world.bounds = { l: to.x, r: to.x + to.w, b: to.y + to.h };
+        world.gravity = 1500 * to.k;
+        lastBox = to;
       },
       update(dt) {
         now += dt;

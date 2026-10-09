@@ -1,6 +1,6 @@
 import { canvasGame } from '../../core/canvas-game';
 import { BG, hsl } from '../../core/color';
-import { keyDir, swipeDir, type SwipeDir } from '../../core/input';
+import { keyDir, singlePointer, swipeDir, type SwipeDir } from '../../core/input';
 import { roundRect, TAU } from '../../core/math';
 import type { GameFactory } from '../../core/types';
 import { initSnake, placeFood, step, type SnakeState } from './logic';
@@ -58,7 +58,7 @@ const game: GameFactory = (ctx) =>
     ctx.hint('Swipe to steer');
 
     return {
-      pointer: {
+      pointer: singlePointer({
         down(p) {
           anchor = { x: p.x, y: p.y };
           started = true;
@@ -74,7 +74,7 @@ const game: GameFactory = (ctx) =>
         up() {
           anchor = null;
         },
-      },
+      }),
       key(e) {
         const d = keyDir(e);
         if (d) {

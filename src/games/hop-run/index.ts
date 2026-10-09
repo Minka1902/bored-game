@@ -1,4 +1,5 @@
 import { canvasGame } from '../../core/canvas-game';
+import { singlePointer } from '../../core/input';
 import { Particles } from '../../core/fx/particles';
 import { roundRect, TAU } from '../../core/math';
 import type { GameFactory } from '../../core/types';
@@ -82,7 +83,7 @@ const game: GameFactory = (ctx) =>
     ctx.hint('Tap to jump · hold to jump higher');
 
     return {
-      pointer: { down: jump, up: () => (holding = false) },
+      pointer: singlePointer({ down: jump, up: () => (holding = false) }),
       key(e) {
         if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w') {
           e.preventDefault();

@@ -28,6 +28,8 @@ export function canvasGame(
   const unbind = spec.pointer ? bindPointers(stage.canvas, spec.pointer) : () => {};
   const onKey = (e: KeyboardEvent) => {
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    // keys aimed at a focused control (game-over buttons, settings switches) are not game input
+    if ((e.target as Element | null)?.closest?.('button, input, a, select, textarea')) return;
     spec.key?.(e);
   };
   const onKeyUp = (e: KeyboardEvent) => spec.keyUp?.(e);
@@ -38,11 +40,15 @@ export function canvasGame(
     spec.render(stage.g, stage);
   });
   loop.start();
+  let destroyed = false;
 
   return {
     pause: () => loop.stop(),
-    resume: () => loop.start(),
+    resume: () => {
+      if (!destroyed) loop.start();
+    },
     destroy() {
+      destroyed = true;
       loop.stop();
       unbind();
       window.removeEventListener('keydown', onKey);

@@ -3,12 +3,14 @@ import { BG, PALETTE } from '../../core/color';
 import { text } from '../../core/draw';
 import { Particles } from '../../core/fx/particles';
 import { roundRect, TAU } from '../../core/math';
-import { World, type Body } from '../../core/physics/circles';
+import { remapBodies, World, type Body, type Box } from '../../core/physics/circles';
 import type { GameFactory } from '../../core/types';
 
 const MULTS = [10, 3, 1, 0.5, 0.2, 0.5, 1, 3, 10];
 const BALLS = 10;
-const ROWS = 11;
+const MAX_ROWS = 11;
+const STILL_S = 0.8;
+const MAX_NUDGES = 6;
 
 const game: GameFactory = (ctx) =>
   canvasGame(ctx, (s) => {
@@ -26,13 +28,23 @@ const game: GameFactory = (ctx) =>
     const L = () => {
       const w = Math.min(s.w - 16, 460);
       const x = (s.w - w) / 2;
-      const top = 150;
+      const top = Math.max(90, Math.min(150, s.h * 0.22));
       const bucketH = 54;
       const bottom = s.h - 20;
       const bucketTop = bottom - bucketH;
-      const gapY = (bucketTop - 30 - top) / ROWS;
-      return { x, w, top, bottom, bucketTop, gapY, colW: w / MULTS.length };
+      const spacing = w / (MULTS.length + 1);
+      const pegR = Math.max(3, spacing * 0.09);
+      const ballR = Math.max(6, spacing * 0.2);
+      // rows must stay far enough apart that a ball always fits between diagonal neighbors
+      const clear = 2 * pegR + 2 * ballR + 4;
+      const minGap = Math.max(spacing * 0.5, Math.sqrt(Math.max(0, clear * clear - (spacing / 2) ** 2)));
+      const avail = Math.max(0, bucketTop - 30 - top);
+      const rows = Math.max(2, Math.min(MAX_ROWS, Math.floor(avail / minGap) + 1));
+      const gapY = avail / Math.max(1, rows - 1);
+      return { x, w, top, bottom, bucketTop, gapY, rows, spacing, pegR, ballR, colW: w / MULTS.length };
     };
+    const boxOf = (l: ReturnType<typeof L>): Box => ({ x: l.x, y: l.top, w: l.w, h: l.bottom - l.top });
+    let built = L();
 
     const build = () => {
       const l = L();
@@ -41,14 +53,15 @@ const game: GameFactory = (ctx) =>
       world.restitution = 0.45;
       world.contactDamping = 0.9;
       world.bounds = { l: l.x, r: l.x + l.w, b: l.bottom };
+      built = l;
       pegs = [];
       flash = new Map();
-      const spacing = l.w / (MULTS.length + 1);
-      for (let r = 0; r < ROWS; r++) {
+      const spacing = l.spacing;
+      for (let r = 0; r < l.rows; r++) {
         const count = r % 2 ? MULTS.length : MULTS.length + 1;
         const ox = l.x + (r % 2 ? spacing : spacing / 2);
         for (let i = 0; i < count; i++)
-          pegs.push(world.add({ x: ox + i * spacing, y: l.top + r * l.gapY, vx: 0, vy: 0, r: Math.max(3, spacing * 0.09), m: 1, static: true }));
+          pegs.push(world.add({ x: ox + i * spacing, y: l.top + r * l.gapY, vx: 0, vy: 0, r: l.pegR, m: 1, static: true }));
       }
       for (let i = 1; i < MULTS.length; i++) world.segments.push({ ax: l.x + i * l.colW, ay: l.bucketTop, bx: l.x + i * l.colW, by: l.bottom });
       world.onContact = (a, b) => {
@@ -74,10 +87,10 @@ const game: GameFactory = (ctx) =>
     const drop = (x: number) => {
       if (over || left <= 0) return;
       const l = L();
-      const r = Math.max(6, (l.w / (MULTS.length + 1)) * 0.2);
+      const r = l.ballR;
       left--;
       ctx.hud.sub(`${left} ${left === 1 ? 'ball' : 'balls'}`);
-      world.add({ x: Math.min(l.x + l.w - r, Math.max(l.x + r, x + (Math.random() - 0.5) * 4)), y: l.top - 50, vx: 0, vy: 0, r, m: 1 });
+      world.add({ x: Math.min(l.x + l.w - r, Math.max(l.x + r, x + (Math.random() - 0.5) * 4)), y: l.top - 50, vx: 0, vy: 0, r, m: 1, data: { still: 0, nudges: 0 } });
       ctx.sfx.play('blip', 1.1, 0.5);
       ctx.haptics.tap();
     };
@@ -94,7 +107,12 @@ const game: GameFactory = (ctx) =>
         }
       },
       resize() {
-        if (left === BALLS) reset();
+        // rebuild the board for the new size and carry balls in flight across, so the round can still finish
+        const from = boxOf(built);
+        const balls = world.bodies.filter((b) => !b.static);
+        build();
+        remapBodies(balls, from, boxOf(built));
+        for (const b of balls) world.add(b);
       },
       update(dt) {
         now += dt;
@@ -108,8 +126,18 @@ const game: GameFactory = (ctx) =>
         world.step(dt, 4);
         const l = L();
         for (const b of [...world.bodies]) {
-          if (b.static || b.y < l.bucketTop + 10) continue;
-          if (Math.abs(b.vy) > 60 && b.y < l.bottom - b.r - 2) continue;
+          if (b.static) continue;
+          if (b.y < l.bucketTop + 10) {
+            // a ball resting on pegs gets a nudge; one that stays stuck is scored where it is
+            b.data.still = Math.hypot(b.vx, b.vy) < 25 ? b.data.still + dt : 0;
+            if (b.data.still < STILL_S) continue;
+            b.data.still = 0;
+            if (++b.data.nudges <= MAX_NUDGES) {
+              b.vx += (Math.random() < 0.5 ? -1 : 1) * 140;
+              b.vy -= 90;
+              continue;
+            }
+          } else if (Math.abs(b.vy) > 60 && b.y < l.bottom - b.r - 2) continue;
           const i = Math.max(0, Math.min(MULTS.length - 1, Math.floor((b.x - l.x) / l.colW)));
           const gained = Math.round(MULTS[i] * 100);
           score += gained;

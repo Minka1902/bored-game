@@ -99,7 +99,8 @@ const game: GameFactory = (ctx) =>
         g.globalCompositeOperation = 'source-over';
         strokes.length = 0;
         const c = chip();
-        g.fillStyle = 'rgba(255,255,255,0.14)';
+        // opaque: the canvas only fades slowly, so a translucent chip would pile up to white
+        g.fillStyle = '#2a1b4f';
         g.beginPath();
         roundRect(g, c.x, c.y, c.w, c.h, 14);
         g.fill();

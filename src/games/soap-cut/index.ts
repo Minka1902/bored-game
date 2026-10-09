@@ -1,4 +1,5 @@
 import { canvasGame } from '../../core/canvas-game';
+import { singlePointer } from '../../core/input';
 import { BG, shade } from '../../core/color';
 import { easeOutCubic } from '../../core/ease';
 import type { GameFactory } from '../../core/types';
@@ -82,7 +83,7 @@ const game: GameFactory = (ctx) =>
     ctx.hint('Swipe across the soap');
 
     return {
-      pointer: {
+      pointer: singlePointer({
         down(p) {
           cutThisStroke = false;
           trail.length = 0;
@@ -96,7 +97,7 @@ const game: GameFactory = (ctx) =>
             cut();
           }
         },
-      },
+      }),
       update(dt) {
         now += dt;
         slideT = Math.min(1, slideT + dt / 0.45);

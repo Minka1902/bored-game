@@ -1,4 +1,5 @@
 import { canvasGame } from '../../core/canvas-game';
+import { singlePointer } from '../../core/input';
 import { BG, hsl } from '../../core/color';
 import { text } from '../../core/draw';
 import { clamp, TAU } from '../../core/math';
@@ -53,7 +54,7 @@ const game: GameFactory = (ctx) =>
     ctx.hint('Draw a perfect circle');
 
     return {
-      pointer: {
+      pointer: singlePointer({
         down(p) {
           if (done) return;
           pts = [{ x: p.x, y: p.y }];
@@ -72,7 +73,7 @@ const game: GameFactory = (ctx) =>
         up() {
           if (drawing) finish();
         },
-      },
+      }),
       render(g) {
         g.fillStyle = BG;
         g.fillRect(0, 0, s.w, s.h);

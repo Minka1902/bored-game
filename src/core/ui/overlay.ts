@@ -49,6 +49,8 @@ export interface GameOverOpts {
 export function showGameOver(root: HTMLElement, o: GameOverOpts): () => void {
   const wrap = el('div', 'gameover');
   const card = el('div', 'go-card');
+  card.setAttribute('role', 'dialog');
+  card.setAttribute('aria-label', `${o.title}: ${o.score}`);
   const title = el('div', 'go-title', o.title);
   const score = el('div', 'go-score', o.score);
   const best = el('div', 'go-best', o.isNew ? '★ New best!' : `Best ${o.best}`);
@@ -67,6 +69,7 @@ export function showGameOver(root: HTMLElement, o: GameOverOpts): () => void {
   const armTimer = setTimeout(() => {
     armed = true;
     wrap.classList.add('armed');
+    retry.focus({ preventScroll: true });
   }, 450);
   const done = (fn: () => void) => () => {
     if (!armed) return;
@@ -75,7 +78,10 @@ export function showGameOver(root: HTMLElement, o: GameOverOpts): () => void {
   };
   retry.addEventListener('click', done(o.onRetry));
   next.addEventListener('click', done(o.onNext));
+  // Enter/Space mean "again" only when nothing has focus; a focused button keeps its own meaning
   const onKey = (e: KeyboardEvent) => {
+    const a = document.activeElement;
+    if (a && a !== document.body) return;
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       e.stopImmediatePropagation();

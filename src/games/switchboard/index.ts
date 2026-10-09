@@ -2,7 +2,7 @@
 import type { GameFactory } from '../../core/types';
 
 const CSS = `
-.sb{position:absolute;inset:0;overflow:auto;padding:86px 14px 24px;background:#1d1238;touch-action:none}
+.sb{position:absolute;inset:0;overflow:auto;padding:86px 14px 24px;background:#1d1238;touch-action:pan-y;overscroll-behavior:contain}
 .sb-panel{width:min(440px,100%);margin:0 auto;display:grid;gap:12px}
 .sb-card{background:#2a1b4f;border-radius:22px;padding:14px;box-shadow:0 4px 0 #120a24}
 .sb-toggles{display:flex;justify-content:space-between;gap:8px}

@@ -9,7 +9,7 @@ import { openSettings } from './settings';
 type Filter = 'all' | Category;
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'fidget', label: '🌀 Fidget' },
+  { id: 'fidget', label: '🧸 Fidget' },
   { id: 'arcade', label: '🕹️ Arcade' },
   { id: 'brain', label: '🧠 Brain' },
 ];

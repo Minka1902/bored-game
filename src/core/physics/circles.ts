@@ -135,3 +135,24 @@ export class World {
     }
   }
 }
+
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/** Maps bodies from one container box into another (scaling by width), e.g. after the screen resizes mid-game. */
+export function remapBodies(bodies: Body[], from: Box, to: Box): void {
+  const k = to.w / from.w;
+  const ky = to.h / from.h;
+  for (const b of bodies) {
+    b.x = to.x + (b.x - from.x) * k;
+    b.y = to.y + (b.y - from.y) * ky;
+    b.r *= k;
+    b.m *= k * k;
+    b.vx *= k;
+    b.vy *= k;
+  }
+}

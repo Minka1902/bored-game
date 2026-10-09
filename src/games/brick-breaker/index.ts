@@ -1,4 +1,5 @@
 import { canvasGame } from '../../core/canvas-game';
+import { singlePointer } from '../../core/input';
 import { BG, PALETTE, shade } from '../../core/color';
 import { Particles } from '../../core/fx/particles';
 import { Shake } from '../../core/fx/shake';
@@ -137,7 +138,7 @@ const game: GameFactory = (ctx) =>
     ctx.hint('Drag to move · tap to launch');
 
     return {
-      pointer: {
+      pointer: singlePointer({
         down(p) {
           paddleX = p.x;
           launch();
@@ -148,7 +149,7 @@ const game: GameFactory = (ctx) =>
         hover(x) {
           paddleX = x;
         },
-      },
+      }),
       key(e) {
         if (e.key === ' ') {
           e.preventDefault();

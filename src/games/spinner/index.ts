@@ -1,4 +1,5 @@
 import { canvasGame } from '../../core/canvas-game';
+import { singlePointer } from '../../core/input';
 import { BG, PALETTE, shade } from '../../core/color';
 import { angleDiff, TAU } from '../../core/math';
 import type { GameFactory } from '../../core/types';
@@ -92,7 +93,7 @@ const game: GameFactory = (ctx) =>
     ctx.hint('Flick it to spin');
 
     return {
-      pointer: {
+      pointer: singlePointer({
         down(p) {
           held = true;
           moved = false;
@@ -124,7 +125,7 @@ const game: GameFactory = (ctx) =>
             ctx.sfx.play('click');
           }
         },
-      },
+      }),
       update(dt) {
         if (!held) {
           theta += w * dt;
