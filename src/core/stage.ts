@@ -39,6 +39,8 @@ export function createStage(root: HTMLElement, opts: { maxDpr?: number; alpha?: 
 
   const fit = () => {
     const r = root.getBoundingClientRect();
+    // a detached or display:none root measures 0×0; keep the last real size instead of collapsing
+    if ((r.width < 1 || r.height < 1) && stage.w > 1) return;
     const f = fitSize(r.width, r.height, window.devicePixelRatio, opts.maxDpr ?? 2);
     if (f.pxW === canvas.width && f.pxH === canvas.height && f.w === stage.w && f.h === stage.h) return;
     stage.w = f.w;

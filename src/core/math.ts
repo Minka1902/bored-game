@@ -23,7 +23,9 @@ export function segDist(px: number, py: number, ax: number, ay: number, bx: numb
 
 /** Path for a rounded rectangle (adds to the current path). */
 export function roundRect(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
-  const rr = Math.min(r, w / 2, h / 2);
+  // a collapsed rect (tiny window, detached stage) draws nothing; arcTo throws on negative radii
+  if (!(w > 0 && h > 0)) return;
+  const rr = Math.max(0, Math.min(r, w / 2, h / 2));
   g.moveTo(x + rr, y);
   g.arcTo(x + w, y, x + w, y + h, rr);
   g.arcTo(x + w, y + h, x, y + h, rr);
