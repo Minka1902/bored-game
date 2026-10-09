@@ -3,7 +3,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // Each game folder becomes its own lazily loaded chunk named game-<id>-<hash>.js,
 // which lets scripts/size-budget.mjs check every game against its own budget.
-const gameChunk = /[\/]games[\/]([^\/]+)[\/]index\.ts$/;
+const gameChunk = /[\\/]games[\\/]([^\\/]+)[\\/]index\.ts$/;
 
 export default defineConfig({
   build: {
@@ -27,8 +27,8 @@ export default defineConfig({
         description: 'A pocket arcade of fidget toys and brain-rot mini games for the minutes you need to kill.',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#0f0d1a',
-        theme_color: '#0f0d1a',
+        background_color: '#1d1238',
+        theme_color: '#1d1238',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },

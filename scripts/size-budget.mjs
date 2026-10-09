@@ -21,8 +21,8 @@ const initial = gz(join(DIST, 'index.html')) + refs.reduce((n, r) => n + gz(join
 const files = walk(DIST).filter((p) => !p.endsWith('.map'));
 const total = files.reduce((n, p) => n + gz(p), 0);
 const games = files
-  .filter((p) => /[\/]game-[^\/]+\.js$/.test(p))
-  .map((p) => ({ name: p.replace(/^.*[\/]game-(.+)-[^-]+\.js$/, '$1'), size: gz(p) }))
+  .filter((p) => /[\\/]game-[^\\/]+\.js$/.test(p))
+  .map((p) => ({ name: p.replace(/^.*[\\/]game-(.+)-[\w-]{8}\.js$/, '$1'), size: gz(p) }))
   .sort((a, b) => b.size - a.size);
 
 const kb = (n) => (n / 1000).toFixed(1).padStart(6) + ' KB';

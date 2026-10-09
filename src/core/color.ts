@@ -4,10 +4,10 @@ export const PALETTE = [
   '#22d3ee', '#3b82f6', '#6366f1', '#a855f7', '#e879f9', '#f472b6',
 ] as const;
 
-export const BG = '#0f0d1a';
-export const BG2 = '#1a1730';
-export const INK = '#f5f3ff';
-export const MUTED = '#9b95c9';
+export const BG = '#1d1238';
+export const BG2 = '#2a1b4f';
+export const INK = '#fff6e9';
+export const MUTED = '#b7a8e0';
 
 export const hsl = (h: number, s: number, l: number, a = 1): string =>
   a === 1 ? `hsl(${h} ${s}% ${l}%)` : `hsl(${h} ${s}% ${l}% / ${a})`;
