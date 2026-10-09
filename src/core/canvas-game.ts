@@ -8,6 +8,7 @@ export interface CanvasGameSpec {
   render(g: CanvasRenderingContext2D, s: Stage): void;
   pointer?: PointerHandlers;
   key?(e: KeyboardEvent): void;
+  keyUp?(e: KeyboardEvent): void;
   resize?(s: Stage): void;
   destroy?(): void;
 }
@@ -29,7 +30,9 @@ export function canvasGame(
     if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     spec.key?.(e);
   };
+  const onKeyUp = (e: KeyboardEvent) => spec.keyUp?.(e);
   if (spec.key) window.addEventListener('keydown', onKey);
+  if (spec.keyUp) window.addEventListener('keyup', onKeyUp);
   const loop = createLoop((dt, t) => {
     spec.update?.(dt, t);
     spec.render(stage.g, stage);
@@ -43,6 +46,7 @@ export function canvasGame(
       loop.stop();
       unbind();
       window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', onKeyUp);
       spec.destroy?.();
       stage.destroy();
     },
