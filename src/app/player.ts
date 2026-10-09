@@ -15,7 +15,7 @@ export function renderPlayer(app: HTMLElement, meta: GameMeta, d: Deps, nav: Nav
   root.innerHTML = `
     <header class="bar">
       <button class="icon-btn" data-act="home" aria-label="Back to all games">${ICONS.back}</button>
-      <div class="bar-title"><span aria-hidden="true">${meta.emoji}</span>${esc(meta.title)}</div>
+      <div class="bar-title">${esc(meta.title)}</div>
       <button class="icon-btn fav" data-act="fav" aria-label="Favorite" aria-pressed="${d.stats.favs().includes(meta.id)}">${ICONS.star}</button>
       <button class="icon-btn" data-act="settings" aria-label="Sound and vibration settings">${ICONS.gear}</button>
       <button class="shuffle-btn" data-act="shuffle" aria-label="Random game">${ICONS.shuffle}<span>Next</span></button>

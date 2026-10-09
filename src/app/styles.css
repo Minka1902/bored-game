@@ -164,20 +164,20 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
   flex: none;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: calc(var(--top) + 6px) 8px 6px;
+  gap: 2px;
+  padding: calc(var(--top) + 6px) 8px 6px 4px;
   background: #1d1238;
   border-bottom: 3px solid var(--c);
 }
-.bar .icon-btn { background: transparent; }
+.bar .icon-btn { width: 40px; background: transparent; }
 .bar-title {
   flex: 1;
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  padding-left: 2px;
   font-weight: 900;
-  font-size: 1.08rem;
+  font-size: 1.05rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -188,7 +188,8 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
   align-items: center;
   gap: 4px;
   height: 40px;
-  padding: 0 14px 0 10px;
+  margin-left: 4px;
+  padding: 0 12px 0 9px;
   border: 0;
   border-radius: 14px;
   background: var(--c);
