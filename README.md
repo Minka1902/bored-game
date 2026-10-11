@@ -1,9 +1,9 @@
 # Bored Game
 
-A pocket arcade for the few minutes you need to kill: 38 fidget toys, arcade mini games and quick brain challenges. Open it, tap a tile (or **Surprise me**), and you're playing in under a second. You can switch to a random game at any time with **Next**.
+A pocket arcade for the few minutes you need to kill: 39 fidget toys, arcade mini games and quick brain challenges. Open it, tap a tile (or **Surprise me**), and you're playing in under a second. You can switch to a random game at any time with **Next**.
 
 - **No account.** Scores, favorites and "time killed" are stored on the device.
-- **Tiny.** 13.8 KB gzipped to start, about 1–4 KB per game, 127 KB for everything, icons included.
+- **Tiny.** 13.9 KB gzipped to start, about 1–4 KB per game, 131 KB for everything, icons included.
 - **Works offline.** It's an installable PWA, and every game is cached after the first visit.
 - **No assets.** Every graphic is drawn in code and every sound is synthesized with WebAudio.
 
@@ -11,7 +11,7 @@ A pocket arcade for the few minutes you need to kill: 38 fidget toys, arcade min
 
 | Fidget (no way to lose) | Arcade (score and fail) | Brain (quick challenges) |
 |---|---|---|
-| Bubble Wrap · Poppers · Spinner · Swirl · Switchboard · Fireworks · Power Wash · Kaleido · Beat Pads · Slime · Sandfall · Ripples · Soap Cut | Flapper · Stacker · Knife Throw · Chop · Hop Run · Brick Breaker · Snake · Dodge · Tile Tap · Slice · Merge Drop · Block Fit · Keepy Up · Peg Drop | 2048 · Perfect Circle · Ten Seconds · Reaction · Odd Color · Color Clash · Math Sprint · Echo · Ball Sort · Ant Feast · Bus Loop |
+| Bubble Wrap · Poppers · Spinner · Swirl · Switchboard · Fireworks · Power Wash · Kaleido · Beat Pads · Slime · Sandfall · Ripples · Soap Cut | Flapper · Stacker · Knife Throw · Chop · Hop Run · Brick Breaker · Snake · Dodge · Tile Tap · Slice · Merge Drop · Block Fit · Keepy Up · Peg Drop | 2048 · Perfect Circle · Ten Seconds · Reaction · Odd Color · Color Clash · Math Sprint · Echo · Ball Sort · Ant Feast · Bus Loop · Unravel |
 
 The design spec explains why the first 36 were picked and which candidates were rejected: [docs/superpowers/specs/2026-10-09-bored-game-design.md](docs/superpowers/specs/2026-10-09-bored-game-design.md).
 

@@ -44,6 +44,7 @@ export const GAMES: GameMeta[] = [
   { id: 'ball-sort', title: 'Ball Sort', category: 'brain', emoji: '🧪', color: '#a3e635', blurb: 'One color per tube', scoring: 'high', load: () => import('./ball-sort/index') },
   { id: 'ant-feast', title: 'Ant Feast', category: 'brain', emoji: '🐜', color: '#ff7a45', blurb: 'Eat the picture', scoring: 'high', load: () => import('./ant-feast/index') },
   { id: 'bus-loop', title: 'Bus Loop', category: 'brain', emoji: '🚌', color: '#3b82f6', blurb: 'Park, board, depart', scoring: 'high', load: () => import('./bus-loop/index') },
+  { id: 'unravel', title: 'Unravel', category: 'brain', emoji: '🧶', color: '#f472b6', blurb: 'Unknit the picture', scoring: 'high', load: () => import('./unravel/index') },
 ];
 
 export const findGame = (id: string): GameMeta | undefined => GAMES.find((g) => g.id === id);
