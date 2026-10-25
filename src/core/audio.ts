@@ -37,13 +37,10 @@ const PRESETS: Record<SfxName, Voice[]> = {
     { type: 'noise', f0: 500, dur: 0.08, vol: 0.25, filter: 'lowpass' },
   ],
   blip: [{ type: 'square', f0: 660, dur: 0.05, vol: 0.12 }],
-  kick: [{ type: 'sine', f0: 160, f1: 40, dur: 0.22, vol: 0.9 }],
   snare: [
     { type: 'noise', f0: 1800, dur: 0.16, vol: 0.45, filter: 'bandpass' },
     { type: 'triangle', f0: 220, f1: 160, dur: 0.08, vol: 0.3 },
   ],
-  hat: [{ type: 'noise', f0: 7500, dur: 0.05, vol: 0.3, filter: 'highpass' }],
-  clap: [0, 0.012, 0.024].map((d) => ({ type: 'noise' as const, f0: 1300, dur: 0.06, vol: 0.4, delay: d, filter: 'bandpass' as const })),
 };
 
 const MAX_VOICES = 24;

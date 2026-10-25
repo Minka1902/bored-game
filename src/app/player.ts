@@ -65,13 +65,12 @@ export function renderPlayer(app: HTMLElement, meta: GameMeta, d: Deps, nav: Nav
       const r = d.stats.submit(meta.id, score, meta.scoring);
       if (disposed) return;
       closeOverlay?.();
-      const isNew = r.isNew && meta.scoring !== 'none';
-      if (isNew) setTimeout(() => !disposed && d.sfx.play('win'), 250);
+      if (r.isNew) setTimeout(() => !disposed && d.sfx.play('win'), 250);
       closeOverlay = showGameOver(stage, {
         title: text ?? 'Game over',
         score: fmtScore(score, meta.unit),
         best: fmtScore(r.best, meta.unit),
-        isNew,
+        isNew: r.isNew,
         onRetry: () => {
           closeOverlay = null;
           retry();

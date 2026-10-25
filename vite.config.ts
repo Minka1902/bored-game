@@ -36,7 +36,7 @@ export default defineConfig({
         name: 'Bored Game',
         short_name: 'Bored',
         description:
-          'A pocket arcade of fidget toys and brain-rot mini games for the minutes you need to kill.',
+          'A pocket arcade of arcade and brain mini games for the minutes you need to kill.',
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#1d1238',

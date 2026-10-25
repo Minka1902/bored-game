@@ -28,7 +28,7 @@ export class Stats {
 
   submit(id: string, v: number, scoring: Scoring): ScoreResult {
     const s = this.get(id);
-    if (!Number.isFinite(v) || scoring === 'none') return { best: s.best ?? 0, isNew: false };
+    if (!Number.isFinite(v)) return { best: s.best ?? 0, isNew: false };
     const better = s.best === undefined || (scoring === 'low' ? v < s.best : v > s.best);
     if (better) this.put(id, { ...s, best: v });
     return { best: better ? v : (s.best as number), isNew: better };

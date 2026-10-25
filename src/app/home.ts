@@ -9,7 +9,6 @@ import { openSettings } from './settings';
 type Filter = 'all' | Category;
 const FILTERS: { id: Filter; label: string }[] = [
   { id: 'all', label: 'All' },
-  { id: 'fidget', label: '🧸 Fidget' },
   { id: 'arcade', label: '🕹️ Arcade' },
   { id: 'brain', label: '🧠 Brain' },
 ];
@@ -18,7 +17,7 @@ const tileStyle = (g: GameMeta) => `--c:${g.color};--c-dark:${shade(g.color, -0.
 
 function tile(g: GameMeta, d: Deps): string {
   const best = d.stats.get(g.id).best;
-  const sub = best !== undefined && g.scoring !== 'none' ? `Best ${fmtScore(best, g.unit)}` : g.blurb;
+  const sub = best !== undefined ? `Best ${fmtScore(best, g.unit)}` : g.blurb;
   return `<a class="tile" href="${playHref(g.id)}" style="${tileStyle(g)}" data-id="${esc(g.id)}">
     <span class="tile-emoji" aria-hidden="true">${g.emoji}</span>
     <span class="tile-title">${esc(g.title)}</span>
@@ -37,7 +36,8 @@ function row(title: string, games: GameMeta[]): string {
 }
 
 export function renderHome(app: HTMLElement, d: Deps, onSurprise: () => void): () => void {
-  let filter = d.store.get<Filter>('ui:cat', 'all');
+  const saved = d.store.get<Filter>('ui:cat', 'all');
+  let filter: Filter = FILTERS.some((f) => f.id === saved) ? saved : 'all';
   const byId = (ids: string[]) => ids.map((id) => GAMES.find((g) => g.id === id)).filter((g): g is GameMeta => !!g);
   const total = d.stats.totalMs();
 
@@ -47,7 +47,7 @@ export function renderHome(app: HTMLElement, d: Deps, onSurprise: () => void): (
     <header class="home-head">
       <div>
         <h1 class="logo">Bored Game</h1>
-        <p class="tagline">${total > 0 ? `${fmtDuration(total)} of boredom killed so far` : 'Tap a toy, or let the big button pick one.'}</p>
+        <p class="tagline">${total > 0 ? `${fmtDuration(total)} of boredom killed so far` : 'Tap a game, or let the big button pick one.'}</p>
       </div>
       <button class="icon-btn" data-act="settings" aria-label="Sound and vibration settings">${ICONS.gear}</button>
     </header>
