@@ -24,7 +24,7 @@ const rafOver = async (page: Page, ms: number) => {
 
 test('leaving a game with settings open does not revive its loop', async ({ page }) => {
   await page.goto('/');
-  await page.goto('/#/play/fireworks');
+  await page.goto('/#/play/dodge');
   await page.waitForSelector('#stage[data-ready="1"]');
   await page.click('[data-act="settings"]');
   await page.evaluate(() => history.back());
@@ -82,30 +82,4 @@ test('peg drop still finishes when the screen grows mid-round', async ({ page })
   for (let i = 0; i < 10; i++) await page.mouse.click(b.x + b.width * (0.3 + i * 0.04), b.y + 40);
   await page.setViewportSize({ width: 412, height: 1000 });
   await expect(page.locator('.gameover')).toBeVisible({ timeout: 25_000 });
-});
-
-test('kaleido mode chip stays readable', async ({ page }) => {
-  await page.goto('/#/play/kaleido');
-  await page.waitForSelector('#stage[data-ready="1"]');
-  await page.waitForTimeout(5000);
-  const lum = await page.evaluate(() => {
-    const c = document.querySelector('#stage canvas') as HTMLCanvasElement;
-    const k = c.width / c.getBoundingClientRect().width;
-    // inside the chip, left of its label
-    const d = c.getContext('2d')!.getImageData(Math.round((c.width / k - 76) * k), Math.round((c.height / k - 36) * k), 1, 1).data;
-    return 0.2126 * d[0] + 0.7152 * d[1] + 0.0722 * d[2];
-  });
-  expect(lum).toBeLessThan(120);
-});
-
-test('switchboard can scroll on a small phone', async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 600 });
-  await page.goto('/#/play/switchboard');
-  await page.waitForSelector('#stage[data-ready="1"]');
-  const r = await page.evaluate(() => {
-    const sb = document.querySelector('.sb') as HTMLElement;
-    return { touch: getComputedStyle(sb).touchAction, scrollable: sb.scrollHeight > sb.clientHeight };
-  });
-  expect(r.scrollable).toBe(true);
-  expect(r.touch).toBe('pan-y');
 });

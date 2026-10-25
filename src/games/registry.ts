@@ -3,20 +3,6 @@ import type { GameMeta } from '../core/types';
 // Metadata only: each game's code is a separate chunk fetched by load() when it is opened.
 // Emoji are limited to Unicode 12 or older so they render on older Android and Windows.
 export const GAMES: GameMeta[] = [
-  // fidget
-  { id: 'bubble-wrap', title: 'Bubble Wrap', category: 'fidget', emoji: '💥', color: '#7dd3fc', blurb: 'Pop pop pop', scoring: 'none', load: () => import('./bubble-wrap/index') },
-  { id: 'poppers', title: 'Poppers', category: 'fidget', emoji: '🌈', color: '#f472b6', blurb: 'Press every dome', scoring: 'none', load: () => import('./poppers/index') },
-  { id: 'spinner', title: 'Spinner', category: 'fidget', emoji: '🌀', color: '#a855f7', blurb: 'Flick it fast', scoring: 'high', unit: 'rpm', load: () => import('./spinner/index') },
-  { id: 'swirl', title: 'Swirl', category: 'fidget', emoji: '✨', color: '#6366f1', blurb: 'Stir the stars', scoring: 'none', load: () => import('./swirl/index') },
-  { id: 'switchboard', title: 'Switchboard', category: 'fidget', emoji: '🎛️', color: '#a3e635', blurb: 'Click all the things', scoring: 'none', load: () => import('./switchboard/index') },
-  { id: 'fireworks', title: 'Fireworks', category: 'fidget', emoji: '🎆', color: '#e879f9', blurb: 'Light up the sky', scoring: 'none', load: () => import('./fireworks/index') },
-  { id: 'power-wash', title: 'Power Wash', category: 'fidget', emoji: '🚿', color: '#22d3ee', blurb: 'Blast off the dirt', scoring: 'none', load: () => import('./power-wash/index') },
-  { id: 'kaleido', title: 'Kaleido', category: 'fidget', emoji: '🔮', color: '#c084fc', blurb: 'Mirror doodles', scoring: 'none', load: () => import('./kaleido/index') },
-  { id: 'beat-pads', title: 'Beat Pads', category: 'fidget', emoji: '🥁', color: '#fb923c', blurb: 'Make noise, nicely', scoring: 'none', load: () => import('./beat-pads/index') },
-  { id: 'slime', title: 'Slime', category: 'fidget', emoji: '🟢', color: '#86efac', blurb: 'Squish it', scoring: 'none', load: () => import('./slime/index') },
-  { id: 'sandfall', title: 'Sandfall', category: 'fidget', emoji: '⏳', color: '#fcd34d', blurb: 'Pour rainbow sand', scoring: 'none', load: () => import('./sandfall/index') },
-  { id: 'ripples', title: 'Ripples', category: 'fidget', emoji: '💧', color: '#60a5fa', blurb: 'Touch the water', scoring: 'none', load: () => import('./ripples/index') },
-  { id: 'soap-cut', title: 'Soap Cut', category: 'fidget', emoji: '🧼', color: '#f9a8d4', blurb: 'Crunchy cubes', scoring: 'none', load: () => import('./soap-cut/index') },
   // arcade
   { id: 'flapper', title: 'Flapper', category: 'arcade', emoji: '🐤', color: '#ffe14d', blurb: 'Tap through gaps', scoring: 'high', load: () => import('./flapper/index') },
   { id: 'stacker', title: 'Stacker', category: 'arcade', emoji: '🧱', color: '#ff7a45', blurb: 'Stack it high', scoring: 'high', load: () => import('./stacker/index') },

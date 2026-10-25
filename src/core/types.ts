@@ -1,8 +1,8 @@
 import type { ScopedStore } from './storage';
 
-export type Category = 'fidget' | 'arcade' | 'brain';
-/** How a game's score is ranked: bigger is better, smaller is better, or no score at all. */
-export type Scoring = 'high' | 'low' | 'none';
+export type Category = 'arcade' | 'brain';
+/** How a game's score is ranked: bigger is better or smaller is better. */
+export type Scoring = 'high' | 'low';
 
 export interface GameMeta {
   id: string;
@@ -12,7 +12,7 @@ export interface GameMeta {
   color: string;
   blurb: string;
   scoring: Scoring;
-  /** Suffix shown after scores, e.g. 'ms', '%', 'rpm', 's'. */
+  /** Suffix shown after scores, e.g. 'ms', '%', 's'. */
   unit?: string;
   load: () => Promise<{ default: GameFactory }>;
 }
@@ -23,8 +23,7 @@ export interface ScoreResult {
 }
 
 export type SfxName =
-  | 'pop' | 'click' | 'tick' | 'whoosh' | 'hit' | 'score' | 'fail' | 'win' | 'thud' | 'blip'
-  | 'kick' | 'snare' | 'hat' | 'clap';
+  | 'pop' | 'click' | 'tick' | 'whoosh' | 'hit' | 'score' | 'fail' | 'win' | 'thud' | 'blip' | 'snare';
 
 export interface Sfx {
   enabled: boolean;
