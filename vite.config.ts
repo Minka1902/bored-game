@@ -55,6 +55,14 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png}'],
+        globIgnores: ['**/game-*.js'],
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/game-[^/]+\.js$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'games' },
+          },
+        ],
       },
     }),
   ],
