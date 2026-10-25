@@ -1,7 +1,8 @@
 import { shade } from '../core/color';
+import { esc } from '../core/ui/html';
 import { createHud, showGameOver, showHint } from '../core/ui/overlay';
 import type { GameContext, GameInstance, GameMeta } from '../core/types';
-import { esc, ICONS, type Deps, type Nav } from './deps';
+import { ICONS, type Deps, type Nav } from './deps';
 import { fmtScore } from './format';
 import { openSettings, type SettingsSheet } from './settings';
 

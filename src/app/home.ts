@@ -1,7 +1,8 @@
 import { shade } from '../core/color';
 import type { GameMeta } from '../core/types';
+import { esc } from '../core/ui/html';
 import { GAMES } from '../games/registry';
-import { esc, ICONS, type Deps } from './deps';
+import { ICONS, type Deps } from './deps';
 import { fmtDuration, fmtScore } from './format';
 import { playHref } from './router';
 import { openSettings } from './settings';

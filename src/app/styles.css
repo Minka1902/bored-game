@@ -276,6 +276,25 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
 .go-best.is-new { color: #c2410c; }
 .go-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
 
+.shop { display: flex; align-items: center; justify-content: center; }
+.shop .go-card { transform: none; }
+.shop-card { display: flex; flex-direction: column; width: min(380px, 100%); max-height: 100%; padding: 18px 16px 16px; }
+.shop-sub { margin-top: 2px; font-weight: 800; color: #6b5c99; font-size: 0.9rem; }
+.shop-balance { margin: 4px 0 8px; font-size: 2rem; font-weight: 900; letter-spacing: -0.02em; }
+.shop-list { flex: 1; min-height: 0; overflow-y: auto; margin: 0 -6px; padding: 0 6px; text-align: left; overscroll-behavior: contain; touch-action: pan-y; }
+.shop-list h3 { margin: 10px 0 6px; font-size: 0.8rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: #6b5c99; }
+.shop-item { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 6px; border-radius: 16px; }
+.shop-item + .shop-item { margin-top: 4px; }
+.shop-item.is-on { background: #efe8ff; }
+.shop-icon { flex: none; width: 34px; font-size: 1.6rem; text-align: center; }
+.shop-text { flex: 1; min-width: 0; display: grid; line-height: 1.2; }
+.shop-text small { font-weight: 700; color: #6b5c99; font-size: 0.78rem; }
+.shop-pips { font-size: 0.7rem; letter-spacing: 1px; color: #c2410c; }
+.shop-act { flex: none; min-height: 38px; min-width: 70px; padding: 0 10px; font-size: 0.95rem; }
+.shop-act:disabled { opacity: 0.4; cursor: default; }
+.shop-tag { flex: none; min-width: 70px; text-align: center; font-weight: 900; font-size: 0.85rem; color: #6b5c99; }
+.shop-cta { margin-top: 12px; }
+
 .btn {
   min-height: 48px;
   padding: 0 14px;

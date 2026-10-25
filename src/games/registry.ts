@@ -18,6 +18,7 @@ export const GAMES: GameMeta[] = [
   { id: 'block-fit', title: 'Block Fit', emoji: '🟦', color: '#818cf8', blurb: 'Fill the lines', scoring: 'high', load: () => import('./block-fit/index') },
   { id: 'keepy-up', title: 'Keepy Up', emoji: '⚽', color: '#4ade80', blurb: "Don't let it drop", scoring: 'high', load: () => import('./keepy-up/index') },
   { id: 'icy-tower', title: 'Icy Tower', emoji: '🧗', color: '#7fe0ff', blurb: 'Jump floor to floor', scoring: 'high', load: () => import('./icy-tower/index') },
+  { id: 'zombie-siege', title: 'Zombie Siege', emoji: '🧟', color: '#86b36b', blurb: 'Survive the horde', scoring: 'high', levels: true, load: () => import('./zombie-siege/index') },
   { id: 'peg-drop', title: 'Peg Drop', emoji: '🎯', color: '#f472b6', blurb: 'Bounce to riches', scoring: 'high', load: () => import('./peg-drop/index') },
   // brain
   { id: 'g2048', title: '2048', emoji: '🔢', color: '#ffb020', blurb: 'Swipe to merge', scoring: 'high', load: () => import('./g2048/index') },
