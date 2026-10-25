@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { board, canExit, cells, generate, occupancy, park, solvable, start, stuck, won, type GenOpts, type Level } from '../../src/games/bus-loop/logic';
+import { blocker, board, canExit, cells, generate, occupancy, park, solvable, start, stuck, won, type GenOpts, type Level } from '../../src/games/bus-loop/logic';
 import { mulberry32 } from '../../src/core/rand';
 
 const OPTS: GenOpts = { gw: 6, gh: 7, colors: 5, seats: 3, active: 2, window: 16, slots: 5 };
@@ -81,5 +81,22 @@ describe('bus-loop logic', () => {
       expect(lv.window).toBe(1);
       expect(solvable(lv)).toBe(true);
     }
+  });
+
+  it('blocker names the first bus on the way out and the free cells before it', () => {
+    const lv = lvl(
+      [
+        { x: 0, y: 2, dir: 0, len: 1, color: 0, cap: 3 },
+        { x: 0, y: 0, dir: 1, len: 1, color: 1, cap: 3 },
+        { x: 2, y: 2, dir: 3, len: 1, color: 1, cap: 3 },
+      ],
+      [],
+    );
+    const lot = [true, true, true];
+    expect(blocker(lv, lot, 0)).toEqual({ bus: 1, gap: 1 });
+    expect(blocker(lv, lot, 2)).toEqual({ bus: 0, gap: 1 });
+    expect(blocker(lv, lot, 1)).toBeNull();
+    lot[1] = false;
+    expect(blocker(lv, lot, 0)).toBeNull();
   });
 });
