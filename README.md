@@ -1,17 +1,18 @@
 # Bored Game
 
-A pocket arcade for the few minutes you need to kill: 25 arcade mini games and quick brain challenges. Open it, tap a tile (or **Surprise me**), and you're playing in under a second. You can switch to a random game at any time with **Next**.
+A pocket arcade for the few minutes you need to kill: 27 arcade mini games and quick brain challenges. Open it, tap a tile (or **Surprise me**), and you're playing in under a second. You can switch to a random game at any time with **Next**.
 
 - **No account.** Scores, favorites and "time killed" are stored on the device.
-- **Tiny.** 13.0 KB gzipped to start, about 1–4 KB per game, 108 KB for everything, icons included.
-- **Works offline.** It's an installable PWA, and every game is cached after the first visit.
+- **Tiny.** 13.1 KB gzipped to start, about 1–6 KB per game, 122 KB for everything, icons included.
+- **Works offline.** It's an installable PWA. Each game downloads the first time you open it and is cached for offline play after that.
+- **Picks up where you left off.** Ball Sort, Ant Feast, Bus Loop and Zombie Siege remember your level; the three puzzles also bring back the exact puzzle you were on.
 - **No assets.** Every graphic is drawn in code and every sound is synthesized with WebAudio.
 
 ## The games
 
 | Arcade (score and fail) | Brain (quick challenges) |
 |---|---|
-| Flapper · Stacker · Knife Throw · Chop · Hop Run · Brick Breaker · Snake · Dodge · Tile Tap · Slice · Merge Drop · Block Fit · Keepy Up · Peg Drop | 2048 · Perfect Circle · Ten Seconds · Reaction · Odd Color · Color Clash · Math Sprint · Echo · Ball Sort · Ant Feast · Bus Loop |
+| Flapper · Stacker · Knife Throw · Chop · Hop Run · Brick Breaker · Snake · Dodge · Tile Tap · Slice · Merge Drop · Block Fit · Keepy Up · Icy Tower · Zombie Siege · Peg Drop | 2048 · Perfect Circle · Ten Seconds · Reaction · Odd Color · Color Clash · Math Sprint · Echo · Ball Sort · Ant Feast · Bus Loop |
 
 The design spec explains why the first 36 were picked and which candidates were rejected: [docs/superpowers/specs/2026-10-09-bored-game-design.md](docs/superpowers/specs/2026-10-09-bored-game-design.md).
 
@@ -51,7 +52,7 @@ src/core/                micro-engine shared by every game
   audio.ts haptics.ts      synthesized sound presets; Android vibration (iOS: best effort)
   storage.ts stats.ts      namespaced localStorage with in-memory fallback; best/plays/time/favorites
   physics/circles.ts       small circle physics (Merge Drop, Peg Drop)
-  fx/ ui/                  particles, screen shake, HUD, game-over card, countdown bar
+  fx/ ui/                  particles, screen shake, HUD, game-over card, countdown bar, joystick, shop
 src/games/registry.ts    metadata + lazy import() for every game
 src/games/<id>/index.ts  one folder per game; rule-heavy games keep pure rules in logic.ts
 ```

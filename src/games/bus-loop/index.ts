@@ -534,14 +534,14 @@ const game: GameFactory = (ctx) =>
           const off = cr ? crashOffset(cr, L.cell * 0.3) : 0;
           const jx = j ? Math.cos(j.ang) * Math.sin(j.t * 40) * 6 * (j.t / 0.35) : 0;
           const jy = j ? Math.sin(j.ang) * Math.sin(j.t * 40) * 6 * (j.t / 0.35) : 0;
-          drawBus(gc, r.x + Math.cos(r.ang) * off + jx, r.y + Math.sin(r.ang) * off + jy, r.ang, r.len, L.cell - 10, COLORS[b.color], b.cap, 0, SKINS[1]);
+          drawBus(gc, r.x + Math.cos(r.ang) * off + jx, r.y + Math.sin(r.ang) * off + jy, r.ang, r.len, L.cell * 0.78, COLORS[b.color], b.cap, 0, SKINS[1]);
         });
         for (const d of drives) {
           const b = lv.buses[d.bus];
           const p = along(d.pts, d.d);
           const k = d.d / d.len;
           const r = busRect(L, d.bus);
-          drawBus(gc, p.x, p.y, heading(d.pts, d.d, d.len), lerp(r.len, L.slotH * 0.92, k), Math.min(ROAD - 6, lerp(L.cell - 10, wide, k)), COLORS[b.color], b.cap, 0, SKINS[1]);
+          drawBus(gc, p.x, p.y, heading(d.pts, d.d, d.len), lerp(r.len, L.slotH * 0.92, k), Math.min(ROAD - 6, lerp(L.cell * 0.78, wide, k)), COLORS[b.color], b.cap, 0, SKINS[1]);
         }
         for (const w of walkers) {
           const p = along(w.pts, w.d);
