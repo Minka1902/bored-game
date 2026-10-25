@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PointerTracker, swipeDir } from '../../src/core/input';
+import { bindPointers, PointerTracker, swipeDir, wheelSwipe } from '../../src/core/input';
 
 describe('PointerTracker', () => {
   it('tracks two fingers independently', () => {
@@ -35,5 +35,41 @@ describe('swipeDir', () => {
     expect(swipeDir(-60, 10)).toBe('left');
     expect(swipeDir(0, 31)).toBe('down');
     expect(swipeDir(5, 5)).toBeNull();
+  });
+});
+
+describe('wheelSwipe', () => {
+  const run = (events: [number, number, number][]) => {
+    const out: string[] = [];
+    const h = wheelSwipe((d) => out.push(d), { min: 40, idleMs: 100 });
+    for (const [deltaX, deltaY, timeStamp] of events) h({ deltaX, deltaY, timeStamp });
+    return out;
+  };
+
+  it('fires once per gesture, following natural scrolling', () => {
+    expect(run([[0, 20, 0], [0, 30, 10], [0, 80, 20], [0, 50, 30]])).toEqual(['up']);
+    expect(run([[60, 0, 0]])).toEqual(['left']);
+  });
+
+  it('a pause longer than idleMs starts a new gesture', () => {
+    expect(run([[0, -50, 0], [0, -50, 50], [0, -50, 300]])).toEqual(['down', 'down']);
+  });
+});
+
+describe('bindPointers', () => {
+  it('tracks a pointer even when the game has no down handler', () => {
+    const on = new Map<string, (e: unknown) => void>();
+    const el = {
+      addEventListener: (t: string, f: (e: unknown) => void) => on.set(t, f),
+      removeEventListener: () => {},
+      getBoundingClientRect: () => ({ left: 0, top: 0 }),
+      setPointerCapture: () => {},
+    } as unknown as HTMLElement;
+    const ups: number[] = [];
+    bindPointers(el, { up: (p) => ups.push(p.x - p.sx) });
+    const ev = (clientX: number) => ({ pointerId: 1, button: 0, clientX, clientY: 0, timeStamp: 0, preventDefault: () => {} });
+    on.get('pointerdown')!(ev(100));
+    on.get('pointerup')!(ev(40));
+    expect(ups).toEqual([-60]);
   });
 });

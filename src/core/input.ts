@@ -75,7 +75,8 @@ export function bindPointers(el: HTMLElement, h: PointerHandlers): () => void {
       // synthetic events cannot be captured
     }
     const [x, y] = local(e);
-    h.down?.(tracker.down(e.pointerId, x, y, e.timeStamp));
+    const p = tracker.down(e.pointerId, x, y, e.timeStamp);
+    h.down?.(p);
   };
   const onMove = (e: PointerEvent) => {
     const [x, y] = local(e);
@@ -105,6 +106,34 @@ export function bindPointers(el: HTMLElement, h: PointerHandlers): () => void {
     el.removeEventListener('pointerup', onUp);
     el.removeEventListener('pointercancel', onUp);
     el.removeEventListener('contextmenu', noMenu);
+  };
+}
+
+/** Turns trackpad or mouse-wheel scrolling into one swipe per gesture (natural scrolling); a gesture ends after idleMs without wheel events. */
+export function wheelSwipe(
+  onDir: (d: SwipeDir) => void,
+  o: { min?: number; idleMs?: number } = {},
+): (e: Pick<WheelEvent, 'deltaX' | 'deltaY' | 'timeStamp'>) => void {
+  const min = o.min ?? 40;
+  const idleMs = o.idleMs ?? 180;
+  let dx = 0;
+  let dy = 0;
+  let last = -Infinity;
+  let fired = false;
+  return (e) => {
+    if (e.timeStamp - last > idleMs) {
+      dx = 0;
+      dy = 0;
+      fired = false;
+    }
+    last = e.timeStamp;
+    if (fired) return;
+    dx += e.deltaX;
+    dy += e.deltaY;
+    const d = swipeDir(-dx, -dy, min);
+    if (!d) return;
+    fired = true;
+    onDir(d);
   };
 }
 
