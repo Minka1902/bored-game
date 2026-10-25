@@ -1,3 +1,5 @@
+import type { ScopedStore } from './storage';
+
 /** Small seedable PRNG returning values in [0, 1). */
 export function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
@@ -28,4 +30,14 @@ export function shuffle<T>(a: T[], r: () => number = Math.random): T[] {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+/** Generator for the level in progress; its seed is stored so leaving and coming back replays the same level. Set 'seed' to 0 to roll a new one. */
+export function levelRng(store: ScopedStore): () => number {
+  let seed = store.get('seed', 0);
+  if (!seed) {
+    seed = 1 + Math.floor(Math.random() * 0x7fffffff);
+    store.set('seed', seed);
+  }
+  return mulberry32(seed);
 }

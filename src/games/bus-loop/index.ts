@@ -3,6 +3,7 @@ import { BG, BG2, PALETTE, shade } from '../../core/color';
 import { text } from '../../core/draw';
 import { Particles } from '../../core/fx/particles';
 import { clamp, lerp, roundRect, TAU } from '../../core/math';
+import { levelRng } from '../../core/rand';
 import type { GameFactory } from '../../core/types';
 import { board, canExit, cells, DIRS, generate, occupancy, park, start, stuck, won, type Level, type State } from './logic';
 
@@ -157,7 +158,7 @@ const game: GameFactory = (ctx) =>
     };
 
     const newLevel = () => {
-      lv = generate(params(level), Math.random);
+      lv = generate(params(level), levelRng(ctx.store));
       restart();
       ctx.hud.set(`Level ${level}`);
       ctx.hud.sub(`${level - 1} solved`);
@@ -242,6 +243,7 @@ const game: GameFactory = (ctx) =>
             mode = 'won';
             level++;
             ctx.store.set('level', level);
+            ctx.store.set('seed', 0);
             ctx.submitScore(level - 1);
             ctx.sfx.play('win');
             ctx.haptics.bump();

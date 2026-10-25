@@ -94,7 +94,7 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
 .surprise:active .surprise-top { transform: translateY(-1px); }
 
 .row { margin-top: 18px; }
-.row h2, .filters { margin: 0 0 10px; }
+.row h2 { margin: 0 0 10px; }
 .row h2 { font-size: 1rem; font-weight: 800; color: var(--muted); }
 .row-scroll {
   display: flex;
@@ -119,17 +119,6 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
   box-shadow: 0 3px 0 var(--c-dark);
 }
 
-.filters { display: flex; gap: 8px; margin-top: 24px; overflow-x: auto; scrollbar-width: none; }
-.filter {
-  flex: none;
-  padding: 9px 14px;
-  border: 2px solid var(--line);
-  border-radius: 999px;
-  background: transparent;
-  font-weight: 800;
-  font-size: 0.95rem;
-}
-.filter[aria-pressed='true'] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
 .grid {
   display: grid;

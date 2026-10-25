@@ -4,7 +4,7 @@ import { text } from '../../core/draw';
 import { easeOutBack } from '../../core/ease';
 import { Particles } from '../../core/fx/particles';
 import { clamp, lerp, roundRect, TAU } from '../../core/math';
-import { shuffle } from '../../core/rand';
+import { levelRng, shuffle } from '../../core/rand';
 import type { GameFactory } from '../../core/types';
 import { bite, generate, start, stuck, take, target, won, type Level, type State } from './logic';
 
@@ -63,7 +63,7 @@ const game: GameFactory = (ctx) =>
     };
 
     const newLevel = () => {
-      lv = generate(params(level), Math.random);
+      lv = generate(params(level), levelRng(ctx.store));
       hues = shuffle(COLORS.slice());
       restart();
       ctx.hud.set(`Level ${level}`);
@@ -174,6 +174,7 @@ const game: GameFactory = (ctx) =>
               mode = 'won';
               level++;
               ctx.store.set('level', level);
+              ctx.store.set('seed', 0);
               ctx.submitScore(level - 1);
               ctx.sfx.play('win');
               ctx.haptics.bump();
