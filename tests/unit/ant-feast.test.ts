@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { bite, EMPTY, generate, playPlan, reach, start, stuck, take, target, won, type Level } from '../../src/games/ant-feast/logic';
+import { ART } from '../../src/games/ant-feast/art';
+import { bite, EMPTY, fromArt, generate, playPlan, reach, start, stuck, take, target, won, type Level } from '../../src/games/ant-feast/logic';
 import { mulberry32 } from '../../src/core/rand';
 
 const SLOTS = 5;
@@ -13,32 +14,37 @@ const lvl = (rows: number[][], cols: Level['cols']): Level => ({
 });
 
 describe('ant-feast logic', () => {
-  it('every generated level is won by its plan with a single slot, at every size', () => {
-    for (let s = 1; s <= 80; s++) {
-      const size = 10 + (s % 11);
-      const colors = 3 + (s % 5);
-      const run = 1 + (s % 5);
-      const lv = generate({ w: size, h: size, colors, cols: 4, chunk: [8, 30], frame: 1 + (s % 3), run }, mulberry32(s));
-      expect(playPlan(lv, 1)).toBe(true);
-      expect(playPlan(lv, SLOTS)).toBe(true);
-      const lens = lv.cols.map((c) => c.length);
-      expect(Math.max(...lens) - Math.min(...lens)).toBeLessThanOrEqual(run + 1);
+  it('every picture has even rows drawn only with its own palette', () => {
+    for (const a of ART) {
+      expect(a.rows.every((r) => r.length === a.rows[0].length), a.name).toBe(true);
+      const used = new Set(a.rows.join('').replace(/\./g, ''));
+      expect([...used].sort(), a.name).toEqual(Object.keys(a.palette).sort());
     }
   });
 
-  it('the frame starts out as background only', () => {
-    const lv = generate({ w: 16, h: 16, colors: 5, cols: 4, chunk: [8, 30], frame: 2, run: 3 }, mulberry32(4));
-    for (let i = 0; i < lv.px.length; i++) {
-      const x = i % 16;
-      const y = Math.floor(i / 16);
-      if (x < 2 || y < 2 || x > 13 || y > 13) expect(lv.px[i]).toBe(0);
-    }
+  it('fromArt maps palette keys to color indexes and see-through to EMPTY', () => {
+    const pic = fromArt({ name: 't', palette: { A: '#000000', B: '#ffffff' }, rows: ['A.', 'BA'] });
+    expect([pic.w, pic.h, [...pic.px]]).toEqual([2, 2, [0, EMPTY, 1, 0]]);
+  });
+
+  it('every picture is won by its plan with one slot and with five, at easy and hard chunk sizes', () => {
+    ART.forEach((a, k) => {
+      const pic = fromArt(a);
+      for (const [lo, run] of [[3, 2], [12, 5]]) {
+        const lv = generate(pic, { cols: 4, chunk: [lo, lo * 3], run }, mulberry32(k * 7 + lo));
+        expect(playPlan(lv, 1), a.name).toBe(true);
+        expect(playPlan(lv, SLOTS), a.name).toBe(true);
+        const lens = lv.cols.map((c) => c.length);
+        expect(Math.max(...lens) - Math.min(...lens)).toBeLessThanOrEqual(run + 1);
+      }
+    });
   });
 
   it('tile counts match the picture exactly, color by color', () => {
-    const lv = generate({ w: 16, h: 16, colors: 6, cols: 4, chunk: [8, 30], frame: 1, run: 3 }, mulberry32(7));
+    const pic = fromArt(ART[ART.length - 1]);
+    const lv = generate(pic, { cols: 4, chunk: [8, 30], run: 3 }, mulberry32(7));
     const tiles = lv.cols.flat();
-    for (let c = 0; c < 6; c++) {
+    for (let c = 0; c < Object.keys(ART[ART.length - 1].palette).length; c++) {
       const pixels = lv.px.filter((v) => v === c).length;
       expect(tiles.filter((t) => t.color === c).reduce((n, t) => n + t.n, 0)).toBe(pixels);
     }

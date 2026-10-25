@@ -1,3 +1,5 @@
+import type { Art } from './art';
+
 export interface Tile {
   color: number;
   n: number;
@@ -30,15 +32,17 @@ export interface Bite {
   done: boolean;
 }
 
-export interface GenOpts {
+export interface Picture {
   w: number;
   h: number;
-  colors: number;
+  /** color index per pixel, row by row; EMPTY where the picture is see-through */
+  px: Int8Array;
+}
+
+export interface GenOpts {
   cols: number;
   /** tile size range; a tile only takes less when its color has no more reachable pixels */
   chunk: [number, number];
-  /** background border width that hides the other colors at the start */
-  frame: number;
   /** longest run of consecutive plan tiles dealt into one column; longer runs bury the next useful tile */
   run: number;
 }
@@ -51,32 +55,12 @@ const open = (px: Int8Array, w: number, h: number, i: number): boolean => {
   return x === 0 || y === 0 || x === w - 1 || y === h - 1 || px[i - 1] < 0 || px[i + 1] < 0 || px[i - w] < 0 || px[i + w] < 0;
 };
 
-/** Procedural pixel art: color 0 frames the picture and hides overlapping circles, boxes and bars, many with a core of another color. */
-export function paint(w: number, h: number, colors: number, r: () => number, frame = 1): Int8Array {
-  const px = new Int8Array(w * h);
-  const shapes = Math.round(colors * 2.5);
-  for (let k = 0; k < shapes; k++) {
-    const color = 1 + Math.floor(r() * (colors - 1));
-    const core = colors > 2 && r() < 0.6 ? 1 + ((color + Math.floor(r() * (colors - 2))) % (colors - 1)) : color;
-    const kind = Math.floor(r() * 3);
-    const rad = 1.5 + r() * Math.min(w, h) * 0.24;
-    const place = (n: number) => (n - 2 * frame - 2 * rad > 0 ? frame + rad + r() * (n - 2 * frame - 2 * rad) : n / 2);
-    const cx = place(w);
-    const cy = place(h);
-    const cos = Math.cos(r() * Math.PI);
-    const sin = Math.sqrt(1 - cos * cos);
-    for (let y = frame; y < h - frame; y++) {
-      for (let x = frame; x < w - frame; x++) {
-        const dx = x + 0.5 - cx;
-        const dy = y + 0.5 - cy;
-        const u = dx * cos + dy * sin;
-        const v = dy * cos - dx * sin;
-        const d = kind === 0 ? Math.hypot(dx, dy) : kind === 1 ? Math.max(Math.abs(dx), Math.abs(dy) / 0.7) : Math.max(Math.abs(u) / 1.6, Math.abs(v) / 0.4);
-        if (d < rad) px[y * w + x] = d < rad * 0.5 ? core : color;
-      }
-    }
-  }
-  return px;
+/** Pixel art to a picture whose colors index the art's palette in key order. */
+export function fromArt(art: Art): Picture {
+  const keys = Object.keys(art.palette);
+  const w = art.rows[0].length;
+  const px = Int8Array.from(art.rows.join(''), (ch) => keys.indexOf(ch));
+  return { w, h: art.rows.length, px };
 }
 
 /** The exposed pixel of a color the ants take next: nearest to the nest under the picture. -1 when none is exposed. */
@@ -127,13 +111,13 @@ export function reach(st: Pick<State, 'w' | 'h' | 'px'>, color: number): number 
  * Builds the tiles by eating the picture serially, so tapping the columns in `plan` order and
  * letting each tile finish before the next always wins.
  */
-export function generate(o: GenOpts, r: () => number): Level {
-  const { w, h, colors, cols } = o;
+export function generate(pic: Picture, o: GenOpts, r: () => number): Level {
+  const { w, h, px } = pic;
   const [lo, hi] = o.chunk;
-  const px = paint(w, h, colors, r, o.frame);
+  const cols = o.cols;
   const sim = { w, h, px: px.slice() };
   const tiles: Tile[] = [];
-  let left = px.length;
+  let left = px.reduce((n, v) => (v >= 0 ? n + 1 : n), 0);
   while (left) {
     const exposed = new Set<number>();
     for (let i = 0; i < px.length; i++) if (sim.px[i] >= 0 && open(sim.px, w, h, i)) exposed.add(sim.px[i]);
