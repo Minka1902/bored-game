@@ -3,6 +3,7 @@ import { BG, PALETTE, shade } from '../../core/color';
 import { text } from '../../core/draw';
 import { Particles } from '../../core/fx/particles';
 import { roundRect, TAU } from '../../core/math';
+import { levelRng } from '../../core/rand';
 import type { GameFactory } from '../../core/types';
 import { canPour, generate, isSolved, pour, type Tubes } from './logic';
 
@@ -25,7 +26,7 @@ const game: GameFactory = (ctx) =>
     const colorsFor = (lv: number) => Math.min(7, 3 + Math.floor((lv - 1) / 2));
 
     const newLevel = () => {
-      tubes = generate(colorsFor(level), CAP, Math.random);
+      tubes = generate(colorsFor(level), CAP, levelRng(ctx.store));
       start = tubes.map((t) => t.slice());
       history = [];
       sel = -1;
@@ -114,6 +115,7 @@ const game: GameFactory = (ctx) =>
           winT = 0;
           level++;
           ctx.store.set('level', level);
+          ctx.store.set('seed', 0);
           ctx.submitScore(level - 1);
           ctx.sfx.play('win');
           ctx.haptics.bump();

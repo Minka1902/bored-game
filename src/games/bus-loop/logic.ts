@@ -70,13 +70,20 @@ export function occupancy(lv: Pick<Level, 'gw' | 'gh' | 'buses'>, lot: boolean[]
   return occ;
 }
 
-const pathClear = (occ: ArrayLike<number>, gw: number, gh: number, b: Bus): boolean => {
+/** The first bus on b's way out and how many free cells lie before it; null when the road is clear. */
+const firstHit = (occ: ArrayLike<number>, gw: number, gh: number, b: Bus): { bus: number; gap: number } | null => {
   const [dx, dy] = DIRS[b.dir];
-  for (let x = b.x + dx, y = b.y + dy; x >= 0 && y >= 0 && x < gw && y < gh; x += dx, y += dy) if (occ[y * gw + x] >= 0) return false;
-  return true;
+  for (let x = b.x + dx, y = b.y + dy, gap = 0; x >= 0 && y >= 0 && x < gw && y < gh; x += dx, y += dy, gap++) {
+    if (occ[y * gw + x] >= 0) return { bus: occ[y * gw + x], gap };
+  }
+  return null;
 };
 
-export const canExit = (lv: Level, lot: boolean[], i: number): boolean => pathClear(occupancy(lv, lot), lv.gw, lv.gh, lv.buses[i]);
+const pathClear = (occ: ArrayLike<number>, gw: number, gh: number, b: Bus): boolean => !firstHit(occ, gw, gh, b);
+
+export const blocker = (lv: Level, lot: boolean[], i: number): { bus: number; gap: number } | null => firstHit(occupancy(lv, lot), lv.gw, lv.gh, lv.buses[i]);
+
+export const canExit = (lv: Level, lot: boolean[], i: number): boolean => !blocker(lv, lot, i);
 
 /**
  * Packs the lot in reverse: every new bus needs a clear exit past the buses already placed,

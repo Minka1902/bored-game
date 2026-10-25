@@ -1,7 +1,7 @@
 import { canvasGame } from '../../core/canvas-game';
 import { BG } from '../../core/color';
 import { font } from '../../core/draw';
-import { swipeDir, keyDir } from '../../core/input';
+import { keyDir, singlePointer, swipeDir, wheelSwipe } from '../../core/input';
 import { roundRect } from '../../core/math';
 import type { GameFactory } from '../../core/types';
 import { canMove, emptyBoard, slide, spawn, SIZE, type Board, type Cell, type Dir, type SlideResult } from './logic';
@@ -20,6 +20,7 @@ const game: GameFactory = (ctx) =>
     let score = 0;
     let anim: (SlideResult & { t: number; spawned: Cell | null }) | null = null;
     let over = false;
+    let swiped = false;
 
     const save = () => ctx.store.set('save', over ? null : { board, score });
 
@@ -94,12 +95,18 @@ const game: GameFactory = (ctx) =>
     ctx.hint('Swipe to merge matching numbers');
 
     return {
-      pointer: {
-        up(p) {
-          const d = swipeDir(p.x - p.sx, p.y - p.sy, 24);
-          if (d) move(d);
+      pointer: singlePointer({
+        down() {
+          swiped = false;
         },
-      },
+        move(p) {
+          const d = swiped ? null : swipeDir(p.x - p.sx, p.y - p.sy, 24);
+          if (!d) return;
+          swiped = true;
+          move(d);
+        },
+      }),
+      wheel: wheelSwipe(move),
       key(e) {
         const d = keyDir(e);
         if (d) {

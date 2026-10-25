@@ -72,11 +72,19 @@ test('shuffle storm does not break anything', async ({ page }) => {
   expect(errs).toEqual([]);
 });
 
-test('works offline after the first visit', async ({ page, context }) => {
+test('games download only when opened, and work offline once played', async ({ page, context }) => {
+  const fetched: string[] = [];
+  page.on('request', (r) => fetched.push(r.url()));
   await gameIds(page);
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.reload();
   await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.waitForTimeout(500);
+  expect(fetched.filter((u) => /\/game-[^/]+\.js$/.test(u))).toEqual([]);
+  await page.locator('.tile').first().click();
+  await page.waitForSelector('#stage[data-ready="1"]');
+  expect(fetched.filter((u) => /\/game-[^/]+\.js$/.test(u))).toHaveLength(1);
+  await page.click('[data-act="home"]');
   await context.setOffline(true);
   await page.reload();
   await page.locator('.tile').first().click();

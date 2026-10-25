@@ -20,9 +20,6 @@ export interface Nav {
   shuffle(): void;
 }
 
-export const esc = (s: string): string =>
-  s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
-
 export function loadSettings(store: Store): Settings {
   return { sound: true, haptics: true, ...store.get<Partial<Settings>>('settings', {}) };
 }

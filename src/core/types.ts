@@ -1,19 +1,19 @@
 import type { ScopedStore } from './storage';
 
-export type Category = 'arcade' | 'brain';
 /** How a game's score is ranked: bigger is better or smaller is better. */
 export type Scoring = 'high' | 'low';
 
 export interface GameMeta {
   id: string;
   title: string;
-  category: Category;
   emoji: string;
   color: string;
   blurb: string;
   scoring: Scoring;
   /** Suffix shown after scores, e.g. 'ms', '%', 's'. */
   unit?: string;
+  /** level-based game: the home tile shows the saved level instead of the best score */
+  levels?: true;
   load: () => Promise<{ default: GameFactory }>;
 }
 
