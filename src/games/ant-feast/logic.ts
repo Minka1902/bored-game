@@ -63,13 +63,13 @@ export function fromArt(art: Art): Picture {
   return { w, h: art.rows.length, px };
 }
 
-/** The exposed pixel of a color the ants take next: nearest to the nest under the picture. -1 when none is exposed. */
-export function target(st: Pick<State, 'w' | 'h' | 'px'>, color: number): number {
+/** The exposed pixel nearest to the nest under the picture, of one color or (color -1) of any; -1 when none is exposed. */
+function nearest(st: Pick<State, 'w' | 'h' | 'px'>, color: number): number {
   const { w, h, px } = st;
   let best = -1;
   let bestD = Infinity;
   for (let i = 0; i < px.length; i++) {
-    if (px[i] !== color || !open(px, w, h, i)) continue;
+    if (px[i] < 0 || (color >= 0 && px[i] !== color) || !open(px, w, h, i)) continue;
     const x = i % w;
     const dx = 2 * x + 1 - w;
     const dy = 2 * (h - (i - x) / w) - 1;
@@ -80,6 +80,15 @@ export function target(st: Pick<State, 'w' | 'h' | 'px'>, color: number): number
     }
   }
   return best;
+}
+
+/** The exposed pixel of a color the ants take next: nearest to the nest under the picture. -1 when none is exposed. */
+export const target = (st: Pick<State, 'w' | 'h' | 'px'>, color: number): number => (color < 0 ? -1 : nearest(st, color));
+
+/** Color of the exposed pixel nearest the nest, the one a free slot was needed for; -1 when the picture is eaten. */
+export function needed(st: Pick<State, 'w' | 'h' | 'px'>): number {
+  const i = nearest(st, -1);
+  return i < 0 ? -1 : st.px[i];
 }
 
 /** How many pixels of a color its ants could eat in a row, with nothing else eaten meanwhile. */

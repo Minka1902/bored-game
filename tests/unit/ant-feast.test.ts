@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ART } from '../../src/games/ant-feast/art';
-import { bite, EMPTY, fromArt, generate, playPlan, reach, start, stuck, take, target, won, type Level } from '../../src/games/ant-feast/logic';
+import { bite, EMPTY, fromArt, generate, needed, playPlan, reach, start, stuck, take, target, won, type Level } from '../../src/games/ant-feast/logic';
+import { MARKERS } from '../../src/games/ant-feast/markers';
 import { mulberry32 } from '../../src/core/rand';
 
 const SLOTS = 5;
@@ -91,5 +92,16 @@ describe('ant-feast logic', () => {
     const free = start(lvl([[0, 0, 0], [0, 1, 0], [0, 0, 0]], [[{ color: 1, n: 1 }], [{ color: 0, n: 8 }]]), 2);
     take(free, 0);
     expect(stuck(free)).toBe(false);
+  });
+
+  it('needed is the color of the exposed pixel nearest the nest, -1 once eaten', () => {
+    const st = start(lvl([[0, 0, 0], [0, 1, 0], [2, 2, 2]], []), 1);
+    expect(needed(st)).toBe(2);
+    st.px.fill(EMPTY);
+    expect(needed(st)).toBe(-1);
+  });
+
+  it('every picture has a marker shape per color', () => {
+    for (const a of ART) expect(Object.keys(a.palette).length, a.name).toBeLessThanOrEqual(MARKERS);
   });
 });
