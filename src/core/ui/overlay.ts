@@ -99,9 +99,13 @@ export function showGameOver(root: HTMLElement, o: GameOverOpts): () => void {
   return dispose;
 }
 
-/** One-line hint that fades out on the first touch inside root. */
-export function showHint(root: HTMLElement, text: string): () => void {
+/** Hint that fades out on the first touch inside root; centered on y (px from the top of root) when given, else near the bottom. */
+export function showHint(root: HTMLElement, text: string, y?: number): () => void {
   const h = el('div', 'hint', text);
+  if (y !== undefined) {
+    h.classList.add('at');
+    h.style.top = `${y}px`;
+  }
   root.appendChild(h);
   const hide = () => {
     h.classList.add('out');

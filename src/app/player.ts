@@ -79,10 +79,10 @@ export function renderPlayer(app: HTMLElement, meta: GameMeta, d: Deps, nav: Nav
         onNext: () => nav.shuffle(),
       });
     },
-    hint(text) {
+    hint(text, y) {
       if (disposed) return;
       closeHint?.();
-      closeHint = showHint(stage, text);
+      closeHint = showHint(stage, text, y);
     },
   };
 

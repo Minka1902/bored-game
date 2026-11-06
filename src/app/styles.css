@@ -237,13 +237,17 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
   border-radius: 999px;
   background: rgb(0 0 0 / 0.55);
   color: #fff;
+  width: max-content;
+  max-width: calc(100% - 32px);
   font-weight: 800;
-  white-space: nowrap;
+  text-align: center;
   pointer-events: none;
   z-index: 3;
   transition: opacity 0.35s, transform 0.35s;
 }
 .hint.out { opacity: 0; transform: translate(-50%, 10px); }
+.hint.at { bottom: auto; transform: translate(-50%, -50%); }
+.hint.at.out { transform: translate(-50%, calc(-50% + 10px)); }
 
 .gameover {
   position: absolute;
@@ -360,3 +364,20 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+/* Round button a game pins to the stage's top-right corner. */
+.stage-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.35);
+  font-size: 1.3rem;
+}
+.stage-btn:active { transform: scale(0.92); }
