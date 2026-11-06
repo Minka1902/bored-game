@@ -6,6 +6,7 @@ A pocket arcade for the few minutes you need to kill: 27 arcade mini games and q
 - **Tiny.** 13.1 KB gzipped to start, about 1–6 KB per game, 122 KB for everything, icons included.
 - **Works offline.** It's an installable PWA. Each game downloads the first time you open it and is cached for offline play after that.
 - **Picks up where you left off.** Ball Sort, Ant Feast, Bus Loop and Zombie Siege remember your level; the three puzzles also bring back the exact puzzle you were on.
+- **Your own picture.** In Ant Feast, the 📷 button pixelates a photo and plays it once as the next level. The photo stays on the device.
 - **No assets.** Every graphic is drawn in code and every sound is synthesized with WebAudio.
 
 ## The games

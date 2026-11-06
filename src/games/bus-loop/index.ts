@@ -1,6 +1,6 @@
 import { canvasGame } from '../../core/canvas-game';
 import { BG, PALETTE, shade } from '../../core/color';
-import { text } from '../../core/draw';
+import { font, text } from '../../core/draw';
 import { Particles } from '../../core/fx/particles';
 import { clamp, lerp, roundRect } from '../../core/math';
 import { levelRng, pick } from '../../core/rand';
@@ -14,6 +14,11 @@ const SEATS = 3;
 const ACTIVE = 2;
 const TOP = 84;
 const ROAD = 40;
+const GLOW_LEVELS = 5;
+const UPCOMING = 6;
+const WON_PAUSE = 1.2;
+const LOST_PAUSE = 1.6;
+const FULL_MSG = 1;
 const BOARD = 0.08;
 const WALK_SPEED = 260;
 const DRIVE_SPEED = 950;
@@ -130,12 +135,24 @@ function drawPerson(g: CanvasRenderingContext2D, x: number, y: number, u: number
   g.fill();
 }
 
-/** Top-down bus heading along ang; its roof skylights double as seats, the first `filled` of them taken. */
-function drawBus(g: CanvasRenderingContext2D, x: number, y: number, ang: number, len: number, wid: number, color: string, cap: number, filled: number, skin: string) {
+/**
+ * Top-down bus heading along ang; its roof skylights double as seats, the first `filled` of them taken.
+ * arrow adds a chevron toward the nose; glow (0–1) a soft halo for a bus whose road is clear.
+ */
+function drawBus(g: CanvasRenderingContext2D, x: number, y: number, ang: number, len: number, wid: number, color: string, cap: number, filled: number, skin: string, arrow = false, glow = 0) {
   const r = wid * 0.24;
   g.save();
   g.translate(x, y);
   g.rotate(ang);
+  if (glow) {
+    g.shadowColor = `rgba(255,236,120,${glow})`;
+    g.shadowBlur = 16;
+    g.fillStyle = `rgba(255,236,120,${glow * 0.8})`;
+    g.beginPath();
+    roundRect(g, -len / 2 - 3, -wid / 2 - 3, len + 6, wid + 6, r + 3);
+    g.fill();
+    g.shadowBlur = 0;
+  }
   g.fillStyle = 'rgba(0,0,0,0.3)';
   g.beginPath();
   roundRect(g, -len / 2 + 2, -wid / 2 + 3, len, wid, r);
@@ -180,6 +197,21 @@ function drawBus(g: CanvasRenderingContext2D, x: number, y: number, ang: number,
     g.arc(sx + sw * 0.38, sy + wid * 0.14, Math.min(sw * 0.3, wid * 0.11), 0, Math.PI * 2);
     g.fill();
   }
+  if (arrow) {
+    const a = wid * 0.3;
+    g.beginPath();
+    g.moveTo(-a * 0.6, -a);
+    g.lineTo(a * 0.6, 0);
+    g.lineTo(-a * 0.6, a);
+    g.lineJoin = 'round';
+    g.lineCap = 'round';
+    g.strokeStyle = 'rgba(20,16,30,0.75)';
+    g.lineWidth = Math.max(4, wid * 0.2);
+    g.stroke();
+    g.strokeStyle = '#ffffff';
+    g.lineWidth = Math.max(2, wid * 0.1);
+    g.stroke();
+  }
   g.restore();
 }
 
@@ -197,6 +229,9 @@ const game: GameFactory = (ctx) =>
     let mode: 'play' | 'won' | 'lost' | 'over' = 'play';
     let endT = 0;
     let stripShake = 0;
+    let fullT = 0;
+    let clock = 0;
+    let exits: boolean[] = [];
     const jolts = new Map<number, Jolt>();
     const fx = new Particles();
 
@@ -217,22 +252,24 @@ const game: GameFactory = (ctx) =>
       const sp = clamp((s.w - 40) / lv.window, 12, 26);
       const pu = sp * 0.36;
       const rowH = pu * 3.6;
+      const road = clamp(s.w * 0.08, 28, ROAD);
       const slotW = Math.min(64, (s.w - 32) / SLOTS - 8);
-      const slotH = slotW * 1.45;
+      const slotH = Math.min(slotW * 1.45, Math.max(slotW * 1.05, (s.h - TOP) * 0.1));
       const side = Math.max(26, pu * 3.4);
-      const cell = Math.max(8, Math.min((s.w - 24 - ROAD * 2) / lv.gw, (s.h - TOP - rowH * 3 - side - slotH - ROAD * 2 - 12) / lv.gh));
+      const bottom = s.h - s.bottom - 10;
+      const cell = Math.max(8, Math.min((s.w - 16 - road * 2) / lv.gw, (bottom - TOP - rowH * 3 - side - slotH - road * 2 - 2) / lv.gh));
       const lotW = cell * lv.gw;
       const lotH = cell * lv.gh;
       const lotX = (s.w - lotW) / 2;
-      const lotY = s.h - 10 - ROAD - lotH;
-      const bayY = lotY - ROAD - slotH;
+      const lotY = bottom - road - lotH;
+      const bayY = lotY - road - slotH;
       const sideY = bayY - side;
       const frontY = sideY - pu * 1.7;
       const rows = Math.max(1, Math.floor((frontY - TOP - pu * 1.5) / rowH) + 1);
       const qx0 = (s.w - sp * (lv.window - 1)) / 2;
       const slotX = (j: number) => (s.w - SLOTS * slotW - (SLOTS - 1) * 8) / 2 + j * (slotW + 8);
-      const ring = { l: lotX - ROAD / 2, r: lotX + lotW + ROAD / 2, t: lotY - ROAD / 2, b: lotY + lotH + ROAD / 2 };
-      return { sp, pu, rowH, slotW, slotH, side, cell, lotW, lotH, lotX, lotY, bayY, sideY, frontY, rows, qx0, slotX, ring };
+      const ring = { l: lotX - road / 2, r: lotX + lotW + road / 2, t: lotY - road / 2, b: lotY + lotH + road / 2 };
+      return { sp, pu, rowH, road, slotW, slotH, side, cell, lotW, lotH, lotX, lotY, bayY, sideY, frontY, rows, qx0, slotX, ring };
     };
     type Layout = ReturnType<typeof layout>;
 
@@ -284,6 +321,12 @@ const game: GameFactory = (ctx) =>
       return [from, { x: from.x, y: mid }, { x: c.x, y: mid }, { x: c.x, y: L.bayY + L.slotH * 0.12 }];
     };
 
+    /** Exit glow and the HUD count only change when the lot or the queue does, not every frame. */
+    const refresh = () => {
+      exits = lv.buses.map((_, i) => st.lot[i] && canExit(lv, st.lot, i));
+      ctx.hud.sub(`${st.queue.length} riders · ${st.lot.filter(Boolean).length} buses`);
+    };
+
     const restart = () => {
       st = start(lv);
       const L = layout();
@@ -296,13 +339,14 @@ const game: GameFactory = (ctx) =>
       acc = 0;
       mode = 'play';
       endT = 0;
+      fullT = 0;
+      refresh();
     };
 
     const newLevel = () => {
       lv = generate(params(level), levelRng(ctx.store));
       restart();
       ctx.hud.set(`Level ${level}`);
-      ctx.hud.sub(`${level - 1} solved`);
     };
 
     const tap = (x: number, y: number) => {
@@ -321,11 +365,13 @@ const game: GameFactory = (ctx) =>
       }
       if (st.slots.indexOf(null) < 0 || !canExit(lv, st.lot, i)) {
         stripShake = 0.35;
+        fullT = FULL_MSG;
         ctx.sfx.play('click', 0.6);
         ctx.haptics.buzz(30);
         return;
       }
       const slot = park(lv, st, i);
+      refresh();
       const pts = drivePath(L, i, slot);
       drives.push({ bus: i, slot, pts, len: pathLen(pts), d: 0 });
       ctx.sfx.play('whoosh', 1.2, 0.5);
@@ -379,9 +425,9 @@ const game: GameFactory = (ctx) =>
       gc.fillRect(0, L.bayY - 3, s.w, 3);
       gc.fillStyle = ASPHALT;
       gc.fillRect(0, L.bayY, s.w, L.lotY - L.bayY);
-      gc.fillRect(L.ring.l - ROAD / 2, L.lotY, ROAD, L.lotH + ROAD);
-      gc.fillRect(L.ring.r - ROAD / 2, L.lotY, ROAD, L.lotH + ROAD);
-      gc.fillRect(L.ring.l - ROAD / 2, L.ring.b - ROAD / 2, L.ring.r - L.ring.l + ROAD, ROAD);
+      gc.fillRect(L.ring.l - L.road / 2, L.lotY, L.road, L.lotH + L.road);
+      gc.fillRect(L.ring.r - L.road / 2, L.lotY, L.road, L.lotH + L.road);
+      gc.fillRect(L.ring.l - L.road / 2, L.ring.b - L.road / 2, L.ring.r - L.ring.l + L.road, L.road);
       gc.strokeStyle = 'rgba(255,255,255,0.55)';
       gc.lineWidth = 2;
       gc.beginPath();
@@ -391,6 +437,21 @@ const game: GameFactory = (ctx) =>
         gc.lineTo(x, L.bayY + L.slotH);
       }
       gc.stroke();
+      gc.font = font(L.slotW * 0.4);
+      gc.textAlign = 'center';
+      gc.textBaseline = 'middle';
+      for (let j = 0; j < SLOTS; j++) {
+        if (st.slots[j] || drives.some((d) => d.slot === j)) continue;
+        const c = bay(L, j);
+        gc.strokeStyle = 'rgba(255,255,255,0.14)';
+        gc.setLineDash([5, 5]);
+        gc.beginPath();
+        roundRect(gc, c.x - L.slotW * 0.35, c.y - L.slotH * 0.46, L.slotW * 0.7, L.slotH * 0.92, L.slotW * 0.17);
+        gc.stroke();
+        gc.setLineDash([]);
+        gc.fillStyle = 'rgba(255,255,255,0.16)';
+        gc.fillText('P', c.x, c.y);
+      }
       gc.strokeStyle = 'rgba(255,210,63,0.5)';
       gc.setLineDash([10, 10]);
       gc.beginPath();
@@ -419,13 +480,16 @@ const game: GameFactory = (ctx) =>
     };
 
     newLevel();
-    ctx.hint('Tap a bus with a clear road; riders walk to their color');
+    const L0 = layout();
+    ctx.hint('Tap a bus with a clear road; riders walk to their color', (TOP + L0.sideY) / 2);
 
     return {
       pointer: { down: (p) => tap(p.x, p.y) },
       update(dt) {
+        clock += dt;
         fx.update(dt);
         stripShake = Math.max(0, stripShake - dt);
+        fullT = Math.max(0, fullT - dt);
         for (const [k, j] of jolts) if ((j.t -= dt) <= 0) jolts.delete(k);
         const L = layout();
         const k = 1 - Math.exp(-10 * dt);
@@ -475,6 +539,7 @@ const game: GameFactory = (ctx) =>
             const r = riders.splice(b.person, 1)[0];
             const pts = walkPath(L, r, b.slot);
             walkers.push({ pts, len: pathLen(pts), d: 0, slot: b.slot, color: b.color, skin: r.skin });
+            refresh();
             ctx.sfx.play('blip', 1.4 + Math.random() * 0.3, 0.25);
             if (b.full) {
               leaves.push({ slot: b.slot, bus, t: 0 });
@@ -498,15 +563,43 @@ const game: GameFactory = (ctx) =>
           }
         } else if (mode !== 'over' && !walkers.length && !drives.length) {
           endT += dt;
-          if (endT > (mode === 'won' ? 1.2 : 0.4)) finish();
+          if (endT > (mode === 'won' ? WON_PAUSE : LOST_PAUSE)) finish();
         }
       },
       render(gc) {
         const L = layout();
         drawScene(gc, L);
         const seen = Math.min(riders.length, L.rows * lv.window);
+        if (seen) {
+          gc.strokeStyle = `rgba(255,210,63,${0.75 + 0.25 * Math.sin(clock * 6)})`;
+          gc.lineWidth = 2.5;
+          gc.beginPath();
+          gc.ellipse(riders[0].x, riders[0].y + L.pu * 1.45, L.pu * 1.5, L.pu * 0.6, 0, 0, Math.PI * 2);
+          gc.stroke();
+        }
         for (let i = seen - 1; i >= 0; i--) drawPerson(gc, riders[i].x, riders[i].y, L.pu, COLORS[st.queue[i]], riders[i].skin, riders[i].step);
-        if (riders.length > seen) text(gc, `+${riders.length - seen}`, s.w - 14, TOP - 4, 13, 'rgba(255,255,255,0.75)', 'right');
+        if (riders.length > seen) {
+          const last = spot(L, seen - 1);
+          const dir = Math.floor((seen - 1) / lv.window) % 2 ? 1 : -1;
+          text(gc, `+${riders.length - seen}`, last.x + dir * L.sp * 0.8, last.y, 13, 'rgba(255,255,255,0.8)', dir > 0 ? 'left' : 'right');
+        }
+        const next = st.queue.slice(0, UPCOMING);
+        if (next.length) {
+          const r = Math.min(L.side * 0.22, 7);
+          const y = L.sideY + L.side / 2;
+          text(gc, 'NEXT', 10, y, 11, 'rgba(29,18,56,0.8)', 'left');
+          next.forEach((c, k) => {
+            const x = 48 + r + k * (r * 2 + 5);
+            gc.fillStyle = 'rgba(29,18,56,0.45)';
+            gc.beginPath();
+            gc.arc(x, y + 1.5, r + 1.5, 0, Math.PI * 2);
+            gc.fill();
+            gc.fillStyle = COLORS[c];
+            gc.beginPath();
+            gc.arc(x, y, k ? r : r + 1.5, 0, Math.PI * 2);
+            gc.fill();
+          });
+        }
         const sx = stripShake > 0 ? Math.sin(stripShake * 70) * 6 : 0;
         const wide = L.slotW * 0.7;
         for (let j = 0; j < SLOTS; j++) {
@@ -516,6 +609,26 @@ const game: GameFactory = (ctx) =>
           const c = bay(L, j);
           const going = walkers.filter((w) => w.slot === j).length;
           drawBus(gc, c.x + sx, c.y, -Math.PI / 2, L.slotH * 0.92, wide, COLORS[b.color], b.cap, b.cap - p.seats - going, SKINS[1]);
+          const free = p.seats + going;
+          const br = clamp(L.slotW * 0.17, 8, 11);
+          const by = c.y + L.slotH * 0.46 - br * 0.6;
+          gc.fillStyle = '#ffffff';
+          gc.beginPath();
+          gc.arc(c.x + sx, by, br, 0, Math.PI * 2);
+          gc.fill();
+          gc.strokeStyle = COLORS[b.color];
+          gc.lineWidth = 2;
+          gc.stroke();
+          text(gc, String(free), c.x + sx, by + 0.5, br * 1.3, '#1d1238');
+        }
+        if (mode === 'lost') {
+          gc.strokeStyle = `rgba(255,59,79,${0.5 + 0.5 * Math.sin(clock * 14)})`;
+          gc.lineWidth = 4;
+          for (let j = 0; j < SLOTS; j++) {
+            gc.beginPath();
+            roundRect(gc, L.slotX(j) - 2, L.bayY + 2, L.slotW, L.slotH - 4, 8);
+            gc.stroke();
+          }
         }
         for (const l of leaves) {
           const b = lv.buses[l.bus];
@@ -534,14 +647,15 @@ const game: GameFactory = (ctx) =>
           const off = cr ? crashOffset(cr, L.cell * 0.3) : 0;
           const jx = j ? Math.cos(j.ang) * Math.sin(j.t * 40) * 6 * (j.t / 0.35) : 0;
           const jy = j ? Math.sin(j.ang) * Math.sin(j.t * 40) * 6 * (j.t / 0.35) : 0;
-          drawBus(gc, r.x + Math.cos(r.ang) * off + jx, r.y + Math.sin(r.ang) * off + jy, r.ang, r.len, L.cell * 0.78, COLORS[b.color], b.cap, 0, SKINS[1]);
+          const glow = level <= GLOW_LEVELS && mode === 'play' && exits[i] && !cr ? 0.55 + 0.35 * Math.sin(clock * 5) : 0;
+          drawBus(gc, r.x + Math.cos(r.ang) * off + jx, r.y + Math.sin(r.ang) * off + jy, r.ang, r.len, L.cell * 0.78, COLORS[b.color], b.cap, 0, SKINS[1], true, glow);
         });
         for (const d of drives) {
           const b = lv.buses[d.bus];
           const p = along(d.pts, d.d);
           const k = d.d / d.len;
           const r = busRect(L, d.bus);
-          drawBus(gc, p.x, p.y, heading(d.pts, d.d, d.len), lerp(r.len, L.slotH * 0.92, k), Math.min(ROAD - 6, lerp(L.cell * 0.78, wide, k)), COLORS[b.color], b.cap, 0, SKINS[1]);
+          drawBus(gc, p.x, p.y, heading(d.pts, d.d, d.len), lerp(r.len, L.slotH * 0.92, k), Math.min(L.road - 6, lerp(L.cell * 0.78, wide, k)), COLORS[b.color], b.cap, 0, SKINS[1]);
         }
         for (const w of walkers) {
           const p = along(w.pts, w.d);
@@ -550,6 +664,16 @@ const game: GameFactory = (ctx) =>
           drawPerson(gc, p.x, p.y, L.pu * (0.6 + tail * 0.4), COLORS[w.color], w.skin, w.d * 0.25);
         }
         gc.globalAlpha = 1;
+        if (fullT) {
+          const y = L.bayY + L.slotH / 2;
+          gc.globalAlpha = Math.min(1, fullT * 3);
+          gc.fillStyle = 'rgba(29,18,56,0.85)';
+          gc.beginPath();
+          roundRect(gc, s.w / 2 - 62, y - 17, 124, 34, 17);
+          gc.fill();
+          text(gc, 'Bays full', s.w / 2, y, 17, '#ff8a9b');
+          gc.globalAlpha = 1;
+        }
         if (mode === 'won' && !walkers.length) text(gc, 'All aboard!', s.w / 2, L.sideY - L.rowH, 34, '#ffd23f');
         fx.draw(gc);
       },
