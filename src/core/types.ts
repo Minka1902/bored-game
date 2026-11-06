@@ -58,8 +58,8 @@ export interface GameContext {
   best(): number | undefined;
   /** Submits the score and shows the shared game-over card. retry() must restart the round in place. */
   gameOver(o: { score: number; text?: string; retry: () => void }): void;
-  /** One-line hint that fades on the first touch. */
-  hint(text: string): void;
+  /** Short hint that fades on the first touch; centered on y (stage px from the top) when given, else near the bottom. */
+  hint(text: string, y?: number): void;
 }
 
 export interface GameInstance {

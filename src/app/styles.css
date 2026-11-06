@@ -237,13 +237,17 @@ svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width:
   border-radius: 999px;
   background: rgb(0 0 0 / 0.55);
   color: #fff;
+  width: max-content;
+  max-width: calc(100% - 32px);
   font-weight: 800;
-  white-space: nowrap;
+  text-align: center;
   pointer-events: none;
   z-index: 3;
   transition: opacity 0.35s, transform 0.35s;
 }
 .hint.out { opacity: 0; transform: translate(-50%, 10px); }
+.hint.at { bottom: auto; transform: translate(-50%, -50%); }
+.hint.at.out { transform: translate(-50%, calc(-50% + 10px)); }
 
 .gameover {
   position: absolute;
